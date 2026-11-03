@@ -1,0 +1,1 @@
+I used Claude and ChatGPT to organize the game plan and README, find assets and check licenses, improve the GDD's structure, formatting and grammar, and help with debugging and testing
