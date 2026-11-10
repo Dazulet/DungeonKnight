@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace DungeonKnight
 {
-
     public class EnemyHealth : MonoBehaviour
     {
         static readonly List<EnemyHealth> active = new List<EnemyHealth>();
@@ -14,10 +13,10 @@ namespace DungeonKnight
         [SerializeField] HitFlash hitFlash;
         [SerializeField] GameObject deathEffect;
         [SerializeField] CoinPickup coinPrefab;
+        [SerializeField] ScoreManager score;
+        [SerializeField] Transform player;
 
         Rigidbody2D rb;
-        ScoreManager score;
-        Transform player;
 
         public int Health { get; private set; }
         public bool IsAlive => Health > 0;

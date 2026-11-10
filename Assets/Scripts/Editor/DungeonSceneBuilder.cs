@@ -55,6 +55,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(gameManager, "player", player);
 
             BuildSpawner(player, score, spawnPoints);
+            EnemyEncounterBuilder.Build(player, score);
             BuilderUtil.Set(cam.GetComponent<CameraShake>(), "player", player);
 
             HudBuilder.Result hud = HudBuilder.Build(gameManager, score, player);
@@ -86,7 +87,7 @@ namespace DungeonKnight.EditorTools
 
         static Vector2 BuildArena(out List<Transform> spawnPoints)
         {
-            var random = new System.Random(42); 
+            var random = new System.Random(42);
             var arena = new GameObject("Arena");
             Transform floor = BuilderUtil.Child(arena, "Floor").transform;
             Transform walls = BuilderUtil.Child(arena, "Walls").transform;
