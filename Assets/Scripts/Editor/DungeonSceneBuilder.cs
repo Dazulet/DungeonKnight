@@ -8,7 +8,7 @@ namespace DungeonKnight.EditorTools
 {
     public static class DungeonSceneBuilder
     {
-        static readonly string[] Layout =
+        static readonly string[] EndlessLayout =
         {
             "####T#####T#####T####",
             "#S........S........S#",
@@ -25,8 +25,27 @@ namespace DungeonKnight.EditorTools
             "####T#####T#####T####",
         };
 
+        static readonly string[] LevelLayout =
+        {
+            "####T#####T#####T####",
+            "#####################",
+            "#...................#",
+            "#..PP...........PP..#",
+            "#..P...C.....C...P..#",
+            "#...................#",
+            "#.....B...@...B.....#",
+            "#...................#",
+            "####...C.....C...P..#",
+            "####P...........PP###",
+            "####..............###",
+            "####.o............###",
+            "####T#####T#####T####",
+        };
+
         static readonly Color Background = new Color(0.06f, 0.05f, 0.08f);
         static readonly Color TorchGlow = new Color(1f, 0.6f, 0.25f, 0.35f);
+
+        static string[] Layout = LevelLayout;
 
         static int Cols => Layout[0].Length;
         static int Rows => Layout.Length;
@@ -37,6 +56,13 @@ namespace DungeonKnight.EditorTools
 
         public static void Build()
         {
+            BuildScene(SceneNames.Dungeon, LevelLayout, withEncounter: true);
+            BuildScene(SceneNames.Endless, EndlessLayout, withEncounter: false);
+        }
+
+        static void BuildScene(string sceneName, string[] layout, bool withEncounter)
+        {
+            Layout = layout;
             foreach (string row in Layout)
                 if (row.Length != Cols) throw new System.InvalidOperationException("Dungeon layout rows must all have the same length.");
 
@@ -54,10 +80,21 @@ namespace DungeonKnight.EditorTools
             var score = game.AddComponent<ScoreManager>();
             BuilderUtil.Set(gameManager, "player", player);
 
-            BuildSpawner(player, score, spawnPoints);
+            LevelGoal goal = null;
+            if (withEncounter)
+            {
+                List<EnemyHealth> enemies = EnemyEncounterBuilder.Build(player, score);
+                goal = game.AddComponent<LevelGoal>();
+                BuilderUtil.Set(goal, "game", gameManager);
+                BuilderUtil.Set(goal, "enemies", enemies);
+            }
+            else
+            {
+                BuildSpawner(player, score, spawnPoints);
+            }
             BuilderUtil.Set(cam.GetComponent<CameraShake>(), "player", player);
 
-            HudBuilder.Result hud = HudBuilder.Build(gameManager, score, player);
+            HudBuilder.Result hud = HudBuilder.Build(gameManager, score, player, goal);
             var input = knight.GetComponent<PlayerInputReader>();
             BuilderUtil.Set(input, "touchMove", hud.Joystick);
             BuilderUtil.Set(input, "touchShoot", hud.ShootButton);
@@ -65,7 +102,7 @@ namespace DungeonKnight.EditorTools
             UiFactory.EventSystem();
 
             BuilderUtil.EnsureFolder(BuilderUtil.SceneRoot);
-            EditorSceneManager.SaveScene(scene, $"{BuilderUtil.SceneRoot}/{SceneNames.Dungeon}.unity");
+            EditorSceneManager.SaveScene(scene, $"{BuilderUtil.SceneRoot}/{sceneName}.unity");
         }
 
         static Camera BuildCamera()
@@ -86,7 +123,7 @@ namespace DungeonKnight.EditorTools
 
         static Vector2 BuildArena(out List<Transform> spawnPoints)
         {
-            var random = new System.Random(42); 
+            var random = new System.Random(42);
             var arena = new GameObject("Arena");
             Transform floor = BuilderUtil.Child(arena, "Floor").transform;
             Transform walls = BuilderUtil.Child(arena, "Walls").transform;

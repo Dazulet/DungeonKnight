@@ -19,6 +19,7 @@ namespace DungeonKnight.EditorTools
                 coinChance: 0.45f, wobble: 0f, radius: 0.36f, bodyHeight: 0f, puff, coin);
             BuildEnemy("Bat", BuilderUtil.Frames("Enemies/bat", 2), 10f, health: 2, speed: 3.0f, score: 150,
                 coinChance: 0.3f, wobble: 1.2f, radius: 0.3f, bodyHeight: 0.3f, puff, coin);
+            EnemyPrefabBuilder.BuildAll(puff, coin, hit);
             BuildKnight(puff);
         }
 
@@ -31,7 +32,7 @@ namespace DungeonKnight.EditorTools
             return BuilderUtil.SavePrefab(go, name);
         }
 
-        static GameObject Shadow(GameObject parent, float y, float scale)
+        internal static GameObject Shadow(GameObject parent, float y, float scale)
         {
             GameObject shadow = BuilderUtil.Child(parent, "Shadow", new Vector3(0f, y, 0f));
             shadow.transform.localScale = new Vector3(scale, scale, 1f);
@@ -39,7 +40,7 @@ namespace DungeonKnight.EditorTools
             return shadow;
         }
 
-        static Rigidbody2D AddBody(GameObject go, RigidbodyType2D type)
+        internal static Rigidbody2D AddBody(GameObject go, RigidbodyType2D type)
         {
             var rb = go.AddComponent<Rigidbody2D>();
             rb.bodyType = type;

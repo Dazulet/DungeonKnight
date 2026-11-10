@@ -4,5 +4,6 @@ namespace DungeonKnight
     {
         public const string MainMenu = "MainMenu";
         public const string Dungeon = "Dungeon";
+        public const string Endless = "Endless";
     }
 }

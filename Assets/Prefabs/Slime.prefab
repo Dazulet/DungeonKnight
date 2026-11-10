@@ -135,6 +135,8 @@ MonoBehaviour:
   hitFlash: {fileID: 1729134638868879830}
   deathEffect: {fileID: 2812100078477985753, guid: 076f047b08dca37419fe46ef46d33ffe, type: 3}
   coinPrefab: {fileID: 6370443523478918334, guid: 4b09c72778f212d4f900cb846a35aae1, type: 3}
+  score: {fileID: 0}
+  player: {fileID: 0}
 --- !u!114 &4039973479246230596
 MonoBehaviour:
   m_ObjectHideFlags: 0

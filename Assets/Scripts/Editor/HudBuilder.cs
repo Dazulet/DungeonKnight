@@ -19,7 +19,7 @@ namespace DungeonKnight.EditorTools
 
         static readonly Vector2 MenuButtonSize = new Vector2(560f, 140f);
 
-        public static Result Build(GameManager game, ScoreManager score, PlayerHealth player)
+        public static Result Build(GameManager game, ScoreManager score, PlayerHealth player, LevelGoal goal = null)
         {
             Canvas canvas = UiFactory.Canvas("HUD Canvas");
             RectTransform safe = UiFactory.SafeArea(canvas.transform);
@@ -71,6 +71,23 @@ namespace DungeonKnight.EditorTools
             GameObject pauseOverlay = BuildPauseOverlay(canvas.transform, out Button resume, out Button restart, out Button pauseMenu);
             GameObject gameOverOverlay = BuildGameOverOverlay(canvas.transform, out Text result, out Button retry, out Button gameOverMenu);
 
+            Text goalText = null;
+            if (goal != null)
+            {
+                goalText = UiFactory.Text(safe, "Goal", "TRY 1   ENEMIES 0", 44, UiFactory.TopRight, new Vector2(-200f, -60f),
+                    new Vector2(620f, 80f), TextAnchor.MiddleRight);
+                GameObject victoryOverlay = BuildVictoryOverlay(canvas.transform, out Text victoryResult, out Button again, out Button victoryMenu);
+                var victory = canvas.gameObject.AddComponent<GameOverPanel>();
+                BuilderUtil.Set(victory, "game", game);
+                BuilderUtil.Set(victory, "score", score);
+                BuilderUtil.Set(victory, "goal", goal);
+                BuilderUtil.Set(victory, "showOn", (int)GameState.Victory);
+                BuilderUtil.Set(victory, "panel", victoryOverlay);
+                BuilderUtil.Set(victory, "resultText", victoryResult);
+                BuilderUtil.Set(victory, "retryButton", again);
+                BuilderUtil.Set(victory, "menuButton", victoryMenu);
+            }
+
             var hud = canvas.gameObject.AddComponent<HudController>();
             BuilderUtil.Set(hud, "player", player);
             BuilderUtil.Set(hud, "score", score);
@@ -79,6 +96,8 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(hud, "heartEmpty", heartEmpty);
             BuilderUtil.Set(hud, "scoreText", scoreText);
             BuilderUtil.Set(hud, "coinText", coinText);
+            BuilderUtil.Set(hud, "goal", goal);
+            BuilderUtil.Set(hud, "goalText", goalText);
 
             var pause = canvas.gameObject.AddComponent<PauseManager>();
             BuilderUtil.Set(pause, "game", game);
@@ -92,6 +111,7 @@ namespace DungeonKnight.EditorTools
             var gameOver = canvas.gameObject.AddComponent<GameOverPanel>();
             BuilderUtil.Set(gameOver, "game", game);
             BuilderUtil.Set(gameOver, "score", score);
+            BuilderUtil.Set(gameOver, "goal", goal);
             BuilderUtil.Set(gameOver, "panel", gameOverOverlay);
             BuilderUtil.Set(gameOver, "resultText", result);
             BuilderUtil.Set(gameOver, "retryButton", retry);
@@ -103,7 +123,7 @@ namespace DungeonKnight.EditorTools
         static RectTransform Overlay(Transform canvas, string name, Color dim, string title, Color titleColor)
         {
             RectTransform overlay = UiFactory.Stretch(canvas, name);
-            UiFactory.Image(overlay, null, dim, raycast: true); 
+            UiFactory.Image(overlay, null, dim, raycast: true);
             RectTransform panel = UiFactory.Rect(overlay, "Panel", UiFactory.Center, Vector2.zero, new Vector2(800f, 760f));
             UiFactory.Image(panel, BuilderUtil.Sprite("UI/ui_panel"));
             UiFactory.Text(panel, "Title", title, 90, UiFactory.Center, new Vector2(0f, 270f), new Vector2(760f, 120f),
@@ -117,6 +137,19 @@ namespace DungeonKnight.EditorTools
             resume = UiFactory.Button(panel, "Resume Button", "RESUME", UiFactory.Center, new Vector2(0f, 90f), MenuButtonSize);
             restart = UiFactory.Button(panel, "Restart Button", "RESTART", UiFactory.Center, new Vector2(0f, -80f), MenuButtonSize);
             menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -250f), MenuButtonSize);
+            GameObject overlay = panel.parent.gameObject;
+            overlay.SetActive(false);
+            return overlay;
+        }
+
+        static GameObject BuildVictoryOverlay(Transform canvas, out Text result, out Button again, out Button menu)
+        {
+            RectTransform panel = Overlay(canvas, "Victory Overlay", new Color(0.02f, 0.12f, 0.08f, 0.8f), "VICTORY", UiFactory.Gold);
+            result = UiFactory.Text(panel, "Result", "DUNGEON CLEARED", 56, UiFactory.Center, new Vector2(0f, 110f),
+                new Vector2(740f, 180f));
+            result.lineSpacing = 1.3f;
+            again = UiFactory.Button(panel, "Play Again Button", "PLAY AGAIN", UiFactory.Center, new Vector2(0f, -90f), MenuButtonSize);
+            menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -260f), MenuButtonSize);
             GameObject overlay = panel.parent.gameObject;
             overlay.SetActive(false);
             return overlay;

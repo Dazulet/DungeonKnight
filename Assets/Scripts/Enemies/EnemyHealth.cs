@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace DungeonKnight
 {
-
     public class EnemyHealth : MonoBehaviour
     {
         static readonly List<EnemyHealth> active = new List<EnemyHealth>();
@@ -14,14 +13,17 @@ namespace DungeonKnight
         [SerializeField] HitFlash hitFlash;
         [SerializeField] GameObject deathEffect;
         [SerializeField] CoinPickup coinPrefab;
+        [SerializeField] ScoreManager score;
+        [SerializeField] Transform player;
 
         Rigidbody2D rb;
-        ScoreManager score;
-        Transform player;
 
         public int Health { get; private set; }
         public bool IsAlive => Health > 0;
         public static int ActiveCount => active.Count;
+
+        public event System.Action<EnemyHealth> Died;
+        public event System.Action<Vector2> Damaged;
 
         void Awake()
         {
@@ -45,10 +47,12 @@ namespace DungeonKnight
             if (hitFlash != null) hitFlash.Flash();
             if (rb != null) rb.AddForce(push, ForceMode2D.Impulse);
             if (Health <= 0) Die();
+            else Damaged?.Invoke(push);
         }
 
         void Die()
         {
+            Died?.Invoke(this);
             if (score != null) score.AddScore(scoreValue);
             if (deathEffect != null) Instantiate(deathEffect, transform.position, Quaternion.identity);
             if (coinPrefab != null && Random.value < coinDropChance)

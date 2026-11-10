@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace DungeonKnight.EditorTools
 {
-   
     public static class DungeonKnightBuilder
     {
         const string ApkPath = "Builds/DungeonKnight.apk";
@@ -45,6 +44,18 @@ namespace DungeonKnight.EditorTools
             Debug.Log("Dungeon Knight: project built. Press Play in the MainMenu scene.");
         }
 
+        [MenuItem("Dungeon Knight/Rebuild Scenes", priority = 5)]
+        public static void RebuildScenes()
+        {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            MainMenuBuilder.Build();
+            DungeonSceneBuilder.Build();
+            ProjectConfigurator.SetBuildScenes();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene($"{BuilderUtil.SceneRoot}/{SceneNames.MainMenu}.unity");
+            Debug.Log("Dungeon Knight: scenes rebuilt.");
+        }
+
         [MenuItem("Dungeon Knight/Build Android APK", priority = 20)]
         public static void BuildAndroid()
         {
@@ -57,6 +68,7 @@ namespace DungeonKnight.EditorTools
                 {
                     $"{BuilderUtil.SceneRoot}/{SceneNames.MainMenu}.unity",
                     $"{BuilderUtil.SceneRoot}/{SceneNames.Dungeon}.unity",
+                    $"{BuilderUtil.SceneRoot}/{SceneNames.Endless}.unity",
                 },
                 locationPathName = ApkPath,
                 target = BuildTarget.Android,

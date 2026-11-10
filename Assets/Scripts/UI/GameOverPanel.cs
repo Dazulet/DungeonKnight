@@ -8,6 +8,8 @@ namespace DungeonKnight
     {
         [SerializeField] GameManager game;
         [SerializeField] ScoreManager score;
+        [SerializeField] LevelGoal goal;
+        [SerializeField] GameState showOn = GameState.GameOver;
         [SerializeField] GameObject panel;
         [SerializeField] Text resultText;
         [SerializeField] Button retryButton;
@@ -34,12 +36,19 @@ namespace DungeonKnight
 
         void OnStateChanged(GameState state)
         {
-            if (state != GameState.GameOver || panel == null) return;
-            if (resultText != null && score != null)
-                resultText.text = $"SCORE {score.Score}\nCOINS {score.Coins}";
+            if (state != showOn || panel == null) return;
+            if (resultText != null) resultText.text = ResultText();
             panel.SetActive(true);
             if (retryButton != null && EventSystem.current != null)
                 EventSystem.current.SetSelectedGameObject(retryButton.gameObject);
+        }
+
+        string ResultText()
+        {
+            int points = score != null ? score.Score : 0;
+            if (goal == null) return $"SCORE {points}\nCOINS {(score != null ? score.Coins : 0)}";
+            int seconds = Mathf.FloorToInt(goal.ElapsedTime);
+            return $"TIME {seconds / 60}:{seconds % 60:00}   TRY {goal.Try}\nSCORE {points}";
         }
     }
 }

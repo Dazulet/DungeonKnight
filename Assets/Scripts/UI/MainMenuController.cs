@@ -7,6 +7,7 @@ namespace DungeonKnight
     public class MainMenuController : MonoBehaviour
     {
         [SerializeField] Button playButton;
+        [SerializeField] Button endlessButton;
         [SerializeField] Button quitButton;
 
         void Awake()
@@ -14,6 +15,8 @@ namespace DungeonKnight
             Time.timeScale = 1f;
             if (RefCheck.Valid(this, playButton, nameof(playButton)))
                 playButton.onClick.AddListener(Play);
+            if (RefCheck.Valid(this, endlessButton, nameof(endlessButton)))
+                endlessButton.onClick.AddListener(PlayEndless);
             if (RefCheck.Valid(this, quitButton, nameof(quitButton)))
                 quitButton.onClick.AddListener(Quit);
         }
@@ -30,6 +33,8 @@ namespace DungeonKnight
         }
 
         public void Play() => SceneLoader.Load(SceneNames.Dungeon);
+
+        public void PlayEndless() => SceneLoader.Load(SceneNames.Endless);
 
         public void Quit()
         {

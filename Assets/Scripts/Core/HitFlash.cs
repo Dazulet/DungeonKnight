@@ -10,6 +10,7 @@ namespace DungeonKnight
         [SerializeField, Range(0f, 0.5f)] float squash = 0.2f;
 
         Color baseColor;
+        Color initialColor;
         Vector3 baseScale;
         float timeLeft;
 
@@ -17,10 +18,19 @@ namespace DungeonKnight
         {
             if (!RefCheck.Valid(this, target, nameof(target))) return;
             baseColor = target.color;
+            initialColor = baseColor;
             baseScale = target.transform.localScale;
         }
 
         public void Flash() => timeLeft = duration;
+
+        public void ResetBaseColor() => SetBaseColor(initialColor);
+
+        public void SetBaseColor(Color color)
+        {
+            baseColor = color;
+            if (target != null && timeLeft <= 0f) target.color = color;
+        }
 
         void Update()
         {
