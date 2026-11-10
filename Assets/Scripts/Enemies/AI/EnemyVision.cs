@@ -7,7 +7,7 @@ namespace DungeonKnight
         [SerializeField] EnemyMotor motor;
         [SerializeField, Min(0f)] float viewDistance = 5.5f;
         [SerializeField, Range(1f, 360f)] float fieldOfView = 110f;
-        [SerializeField] Vector2 eyeOffset = new Vector2(0f, 0.15f);
+        [SerializeField] Vector2 eyeOffset = Vector2.zero;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
         public float ViewDistance => viewDistance;

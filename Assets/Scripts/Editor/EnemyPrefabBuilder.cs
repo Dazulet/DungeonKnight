@@ -7,6 +7,8 @@ namespace DungeonKnight.EditorTools
         public static void BuildAll(GameObject deathEffect, GameObject coin, GameObject hitEffect)
         {
             BuildPatroller(deathEffect, coin, hitEffect);
+            EnemyBolt bolt = BuildEnemyBolt(hitEffect);
+            BuildShooter(deathEffect, coin, bolt);
         }
 
         static void BuildPatroller(GameObject deathEffect, GameObject coin, GameObject hitEffect)
@@ -27,6 +29,44 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "strikeEffect", hitEffect);
 
             BuilderUtil.SavePrefab(go, "Patroller");
+        }
+
+        static EnemyBolt BuildEnemyBolt(GameObject hitEffect)
+        {
+            var go = new GameObject("EnemyBolt");
+            Sprite[] frames = BuilderUtil.Frames("Effects/enemy_bolt", 2);
+            BuilderUtil.AddSprite(go, frames[0], SortOrder.Projectile);
+            BuilderUtil.AddFlipbook(go, frames, 12f);
+
+            GameObject glow = BuilderUtil.Child(go, "Glow");
+            glow.transform.localScale = Vector3.one * 0.45f;
+            BuilderUtil.AddSprite(glow, BuilderUtil.Sprite("Environment/glow"), SortOrder.Projectile - 1, new Color(1f, 0.3f, 0.8f, 0.6f));
+
+            var bolt = go.AddComponent<EnemyBolt>();
+            BuilderUtil.Set(bolt, "hitEffect", hitEffect);
+            return BuilderUtil.SavePrefab(go, "EnemyBolt").GetComponent<EnemyBolt>();
+        }
+
+        static void BuildShooter(GameObject deathEffect, GameObject coin, EnemyBolt bolt)
+        {
+            GameObject go = CreateShell("Shooter", BuilderUtil.Frames("Enemies/shooter", 2), 3f,
+                health: 3, score: 250, coinChance: 0.6f, radius: 0.32f, deathEffect, coin,
+                out EnemyHealth health, out EnemyMotor motor);
+
+            var vision = go.AddComponent<EnemyVision>();
+            BuilderUtil.Set(vision, "motor", motor);
+            BuilderUtil.Set(vision, "viewDistance", 7.5f);
+            BuilderUtil.Set(vision, "fieldOfView", 120f);
+            AttackTelegraph telegraph = AddTelegraph(go);
+
+            var ai = go.AddComponent<ShooterAI>();
+            BuilderUtil.Set(ai, "health", health);
+            BuilderUtil.Set(ai, "motor", motor);
+            BuilderUtil.Set(ai, "vision", vision);
+            BuilderUtil.Set(ai, "telegraph", telegraph);
+            BuilderUtil.Set(ai, "boltPrefab", bolt);
+
+            BuilderUtil.SavePrefab(go, "Shooter");
         }
 
         static GameObject CreateShell(string name, Sprite[] frames, float fps, int health, int score, float coinChance,
@@ -74,6 +114,9 @@ namespace DungeonKnight.EditorTools
             var telegraph = root.AddComponent<AttackTelegraph>();
             BuilderUtil.Set(telegraph, "outline", outline);
             BuilderUtil.Set(telegraph, "fill", fill);
+            BuilderUtil.Set(telegraph, "circleOutlineSprite", outline.sprite);
+            BuilderUtil.Set(telegraph, "circleFillSprite", fill.sprite);
+            BuilderUtil.Set(telegraph, "lineSprite", BuilderUtil.Sprite("Effects/telegraph_line"));
             return telegraph;
         }
     }

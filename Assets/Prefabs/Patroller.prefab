@@ -268,7 +268,7 @@ MonoBehaviour:
   motor: {fileID: 3146658946510535804}
   viewDistance: 5.5
   fieldOfView: 110
-  eyeOffset: {x: 0, y: 0.15}
+  eyeOffset: {x: 0, y: 0}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4096
@@ -449,7 +449,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.AttackTelegraph
   outline: {fileID: 6260253386559422232}
   fill: {fileID: 2501148933385483126}
+  circleOutlineSprite: {fileID: 21300000, guid: b23daa6382d427e458a60341e4ee88ca, type: 3}
+  circleFillSprite: {fileID: 21300000, guid: a811a03332a9ac441b596609900ea101, type: 3}
+  lineSprite: {fileID: 21300000, guid: 618b1f1e8b9c3c64788d5d0ae95d95fc, type: 3}
+  lineWidth: 0.22
   warningColor: {r: 1, g: 0.22, b: 0.18, a: 0.9}
+  lockedColor: {r: 1, g: 0.82, b: 0.25, a: 1}
   strikeColor: {r: 1, g: 0.95, b: 0.85, a: 1}
   strikeFlashDuration: 0.12
   pulseSpeed: 16
