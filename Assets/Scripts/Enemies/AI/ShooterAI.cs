@@ -19,8 +19,8 @@ namespace DungeonKnight
         [SerializeField, Min(0.1f)] float watchSweepPeriod = 3.2f;
 
         [Header("Spacing")]
-        [SerializeField, Min(0f)] float minDistance = 3.5f;
-        [SerializeField, Min(0f)] float maxDistance = 6.5f;
+        [SerializeField, Min(0f)] float minDistance = 2.5f;
+        [SerializeField, Min(0f)] float maxDistance = 7f;
         [SerializeField, Min(0f)] float retreatSpeed = 1.7f;
         [SerializeField, Min(0f)] float approachSpeed = 1.8f;
         [SerializeField, Min(0f)] float sidestepSpeed = 1.6f;
@@ -30,6 +30,7 @@ namespace DungeonKnight
         [Header("Attack")]
         [SerializeField, Range(0.3f, 0.8f)] float aimDuration = 0.7f;
         [SerializeField, Min(0f)] float lockBeforeFire = 0.25f;
+        [SerializeField, Range(0f, 1f)] float aimLeadFactor = 0.6f;
         [SerializeField, Min(0f)] float recoveryDuration = 0.35f;
         [SerializeField, Min(0f)] float shotCooldown = 1.8f;
         [SerializeField, Min(0f)] float firstShotDelay = 0.4f;
@@ -49,6 +50,7 @@ namespace DungeonKnight
         float sidestepSign = 1f;
         float sweepClock;
         float retreatStartTime = -1f;
+        Rigidbody2D targetBody;
 
         protected override ShooterState InitialState => ShooterState.Watch;
 
@@ -144,7 +146,7 @@ namespace DungeonKnight
                     ChangeState(ShooterState.Search);
                     return;
                 }
-                Vector2 toTarget = TargetPosition - Muzzle;
+                Vector2 toTarget = PredictedTargetPosition() - Muzzle;
                 if (toTarget.sqrMagnitude > 0.0001f) aimDirection = toTarget.normalized;
             }
             else
@@ -192,7 +194,7 @@ namespace DungeonKnight
                     break;
                 case ShooterState.Engage:
                     retreatStartTime = -1f;
-                    if (previous == ShooterState.Watch || previous == ShooterState.Search)
+                    if (previous == ShooterState.Watch)
                         nextShotTime = Mathf.Max(nextShotTime, Time.time + firstShotDelay);
                     sidestepSign = Random.value < 0.5f ? -1f : 1f;
                     break;
@@ -205,9 +207,19 @@ namespace DungeonKnight
             }
         }
 
+        Vector2 PredictedTargetPosition()
+        {
+            if (targetBody == null) targetBody = target.GetComponent<Rigidbody2D>();
+            if (targetBody == null || projectileSpeed <= 0f) return TargetPosition;
+            float distance = Vector2.Distance(TargetPosition, Muzzle);
+            float remainingAim = Mathf.Max(0f, aimDuration - TimeInState);
+            float leadTime = remainingAim + distance / projectileSpeed;
+            return TargetPosition + targetBody.GetVelocity() * leadTime * aimLeadFactor;
+        }
+
         void BeginAim()
         {
-            Vector2 toTarget = TargetPosition - Muzzle;
+            Vector2 toTarget = PredictedTargetPosition() - Muzzle;
             aimDirection = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : motor.Facing;
             motor.Face(aimDirection);
             telegraph.ShowLine(Muzzle, aimDirection, ShotLength(aimDirection));

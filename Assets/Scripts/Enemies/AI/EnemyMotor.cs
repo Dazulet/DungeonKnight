@@ -52,6 +52,20 @@ namespace DungeonKnight
 
         public void Stop() => desiredVelocity = Vector2.zero;
 
+        public void Dash(Vector2 direction, float speed)
+        {
+            if (direction.sqrMagnitude < 0.0001f) return;
+            Face(direction);
+            desiredVelocity = direction.normalized * speed;
+            rb.SetVelocity(desiredVelocity);
+        }
+
+        public void Halt()
+        {
+            desiredVelocity = Vector2.zero;
+            rb.SetVelocity(Vector2.zero);
+        }
+
         public void Face(Vector2 direction)
         {
             if (direction.sqrMagnitude < 0.0001f) return;

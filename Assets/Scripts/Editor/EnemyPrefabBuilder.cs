@@ -9,6 +9,7 @@ namespace DungeonKnight.EditorTools
             BuildPatroller(deathEffect, coin, hitEffect);
             EnemyBolt bolt = BuildEnemyBolt(hitEffect);
             BuildShooter(deathEffect, coin, bolt);
+            BuildCharger(deathEffect, coin);
         }
 
         static void BuildPatroller(GameObject deathEffect, GameObject coin, GameObject hitEffect)
@@ -67,6 +68,28 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "boltPrefab", bolt);
 
             BuilderUtil.SavePrefab(go, "Shooter");
+        }
+
+        static void BuildCharger(GameObject deathEffect, GameObject coin)
+        {
+            GameObject go = CreateShell("Charger", BuilderUtil.Frames("Enemies/charger", 2), 6f,
+                health: 5, score: 300, coinChance: 0.7f, radius: 0.4f, deathEffect, coin,
+                out EnemyHealth health, out EnemyMotor motor);
+
+            var vision = go.AddComponent<EnemyVision>();
+            BuilderUtil.Set(vision, "motor", motor);
+            BuilderUtil.Set(vision, "viewDistance", 6f);
+            BuilderUtil.Set(vision, "fieldOfView", 100f);
+            AttackTelegraph telegraph = AddTelegraph(go);
+
+            var ai = go.AddComponent<ChargerAI>();
+            BuilderUtil.Set(ai, "health", health);
+            BuilderUtil.Set(ai, "motor", motor);
+            BuilderUtil.Set(ai, "vision", vision);
+            BuilderUtil.Set(ai, "telegraph", telegraph);
+            BuilderUtil.Set(ai, "body", go.transform.Find("Body").GetComponent<SpriteRenderer>());
+
+            BuilderUtil.SavePrefab(go, "Charger");
         }
 
         static GameObject CreateShell(string name, Sprite[] frames, float fps, int health, int score, float coinChance,

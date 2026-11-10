@@ -23,6 +23,7 @@ namespace DungeonKnight
         Vector2 anchor;
         float angle;
         float size;
+        float width;
         float progress;
         bool locked;
         float flashTimeLeft;
@@ -41,12 +42,17 @@ namespace DungeonKnight
 
         public void ShowCircle(Vector2 center, float radius)
         {
-            Show(Shape.Circle, center, 0f, radius * 2f);
+            Show(Shape.Circle, center, 0f, radius * 2f, 0f);
         }
 
         public void ShowLine(Vector2 start, Vector2 direction, float length)
         {
-            Show(Shape.Line, start, DirectionToAngle(direction), length);
+            Show(Shape.Line, start, DirectionToAngle(direction), length, lineWidth);
+        }
+
+        public void ShowLane(Vector2 start, Vector2 direction, float length, float laneWidth)
+        {
+            Show(Shape.Line, start, DirectionToAngle(direction), length, laneWidth);
         }
 
         public void UpdateLine(Vector2 start, Vector2 direction, float length)
@@ -91,13 +97,14 @@ namespace DungeonKnight
             SetRenderersEnabled(false);
         }
 
-        void Show(Shape newShape, Vector2 position, float newAngle, float newSize)
+        void Show(Shape newShape, Vector2 position, float newAngle, float newSize, float newWidth)
         {
             if (outline == null || fill == null) return;
             shape = newShape;
             anchor = position;
             angle = newAngle;
             size = newSize;
+            width = newWidth;
             progress = 0f;
             locked = false;
             flashTimeLeft = 0f;
@@ -133,8 +140,8 @@ namespace DungeonKnight
             float filled = size * progress;
             outline.transform.localPosition = new Vector3(size * 0.5f, 0f, 0f);
             fill.transform.localPosition = new Vector3(filled * 0.5f, 0f, 0f);
-            outline.transform.localScale = ScaleFor(outline, size, lineWidth);
-            fill.transform.localScale = ScaleFor(fill, filled, lineWidth);
+            outline.transform.localScale = ScaleFor(outline, size, width);
+            fill.transform.localScale = ScaleFor(fill, filled, width);
         }
 
         void ApplyColors()

@@ -484,8 +484,8 @@ MonoBehaviour:
   returnSpeed: 1.5
   watchSweepAngle: 40
   watchSweepPeriod: 3.2
-  minDistance: 3.5
-  maxDistance: 6.5
+  minDistance: 2.5
+  maxDistance: 7
   retreatSpeed: 1.7
   approachSpeed: 1.8
   sidestepSpeed: 1.6
@@ -493,6 +493,7 @@ MonoBehaviour:
   maxRetreatTime: 1.2
   aimDuration: 0.7
   lockBeforeFire: 0.25
+  aimLeadFactor: 0.6
   recoveryDuration: 0.35
   shotCooldown: 1.8
   firstShotDelay: 0.4

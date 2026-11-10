@@ -21,6 +21,11 @@ namespace DungeonKnight.EditorTools
             (new Vector2(8f, 0f), Vector2.left),
         };
 
+        static readonly (Vector2 position, Vector2 facing)[] ChargerHomes =
+        {
+            (new Vector2(0f, -3f), Vector2.down),
+        };
+
         [MenuItem("Dungeon Knight/Rebuild Enemies", priority = 10)]
         public static void RebuildEnemies()
         {
@@ -60,6 +65,10 @@ namespace DungeonKnight.EditorTools
             GameObject shooter = BuilderUtil.LoadPrefab("Shooter");
             for (int i = 0; i < ShooterPosts.Length; i++)
                 PlaceShooter(shooter, enemies, $"Shooter {(char)('A' + i)}", ShooterPosts[i].position, ShooterPosts[i].facing, player, score);
+
+            GameObject charger = BuilderUtil.LoadPrefab("Charger");
+            for (int i = 0; i < ChargerHomes.Length; i++)
+                PlaceCharger(charger, enemies, $"Charger {(char)('A' + i)}", ChargerHomes[i].position, ChargerHomes[i].facing, player, score);
         }
 
         static void PlacePatroller(GameObject prefab, Transform enemies, Transform routes, string name, Vector2[] route,
@@ -87,6 +96,15 @@ namespace DungeonKnight.EditorTools
             var ai = enemy.GetComponent<ShooterAI>();
             BuilderUtil.Set(ai, "target", player);
             BuilderUtil.Set(ai, "postFacing", facing);
+        }
+
+        static void PlaceCharger(GameObject prefab, Transform enemies, string name, Vector2 position, Vector2 facing,
+            PlayerHealth player, ScoreManager score)
+        {
+            GameObject enemy = PlaceEnemy(prefab, enemies, name, position, score, player);
+            var ai = enemy.GetComponent<ChargerAI>();
+            BuilderUtil.Set(ai, "target", player);
+            BuilderUtil.Set(ai, "homeFacing", facing);
         }
 
         static GameObject PlaceEnemy(GameObject prefab, Transform parent, string name, Vector2 position,
