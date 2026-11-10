@@ -113,6 +113,7 @@ namespace DungeonKnight.EditorTools
             {
                 new EditorBuildSettingsScene($"{BuilderUtil.SceneRoot}/{SceneNames.MainMenu}.unity", true),
                 new EditorBuildSettingsScene($"{BuilderUtil.SceneRoot}/{SceneNames.Dungeon}.unity", true),
+                new EditorBuildSettingsScene($"{BuilderUtil.SceneRoot}/{SceneNames.Endless}.unity", true),
             };
         }
     }

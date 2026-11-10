@@ -9,6 +9,7 @@ namespace DungeonKnight
         [SerializeField] protected EnemyHealth health;
         [SerializeField] protected EnemyMotor motor;
         [SerializeField, Range(0f, 0.25f)] float attackScreenMargin = 0.03f;
+        [SerializeField, Min(0f)] float attackGracePeriod = 1.5f;
         [SerializeField] bool logStateChanges;
         [SerializeField] string debugState;
 
@@ -24,7 +25,8 @@ namespace DungeonKnight
         protected Vector2 Position => motor.Position;
         protected Vector2 TargetPosition => target.transform.position;
 
-        protected bool CanStartAttack => HasLivingTarget && IsOnScreen(Position) && IsOnScreen(TargetPosition);
+        protected bool CanStartAttack => HasLivingTarget && Time.timeSinceLevelLoad >= attackGracePeriod
+            && IsOnScreen(Position) && IsOnScreen(TargetPosition);
 
         public void Init(PlayerHealth player) => target = player;
 

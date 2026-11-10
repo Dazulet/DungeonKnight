@@ -23,13 +23,14 @@ namespace DungeonKnight.EditorTools
                 new Vector2(1600f, 160f), color: UiFactory.Gold, outline: 8f);
             title.rectTransform.pivot = UiFactory.Center;
             title.gameObject.AddComponent<UiFloat>();
-            Text tagline = UiFactory.Text(safe, "Tagline", "HOW LONG CAN YOU LAST?", 40, UiFactory.TopCenter, new Vector2(0f, -270f),
+            Text tagline = UiFactory.Text(safe, "Tagline", "CLEAR THE DUNGEON", 40, UiFactory.TopCenter, new Vector2(0f, -270f),
                 new Vector2(1200f, 60f));
             tagline.rectTransform.pivot = UiFactory.Center;
 
             var buttonSize = new Vector2(560f, 140f);
-            Button play = UiFactory.Button(safe, "Play Button", "PLAY", UiFactory.Center, new Vector2(0f, 40f), buttonSize, 70);
-            Button quit = UiFactory.Button(safe, "Quit Button", "QUIT", UiFactory.Center, new Vector2(0f, -120f), buttonSize);
+            Button play = UiFactory.Button(safe, "Play Button", "PLAY", UiFactory.Center, new Vector2(0f, 70f), buttonSize, 70);
+            Button endless = UiFactory.Button(safe, "Endless Button", "ENDLESS", UiFactory.Center, new Vector2(0f, -90f), buttonSize);
+            Button quit = UiFactory.Button(safe, "Quit Button", "QUIT", UiFactory.Center, new Vector2(0f, -250f), buttonSize);
 
             UiFactory.Text(safe, "Controls Hint", "WASD MOVE - SPACE SHOOT - ESC PAUSE", 40, UiFactory.BottomCenter,
                 new Vector2(0f, 90f), new Vector2(1600f, 50f), color: new Color(0.8f, 0.76f, 0.7f)).rectTransform.pivot = UiFactory.Center;
@@ -38,6 +39,7 @@ namespace DungeonKnight.EditorTools
 
             var menu = canvas.gameObject.AddComponent<MainMenuController>();
             BuilderUtil.Set(menu, "playButton", play);
+            BuilderUtil.Set(menu, "endlessButton", endless);
             BuilderUtil.Set(menu, "quitButton", quit);
 
             UiFactory.EventSystem();

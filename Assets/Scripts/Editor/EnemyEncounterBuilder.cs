@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -46,13 +47,15 @@ namespace DungeonKnight.EditorTools
                 return;
             }
 
-            Build(player, score);
+            List<EnemyHealth> enemies = Build(player, score);
+            var goal = Object.FindAnyObjectByType<LevelGoal>();
+            if (goal != null) BuilderUtil.Set(goal, "enemies", enemies);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
             Debug.Log("Dungeon Knight: enemy prefabs and encounter rebuilt.");
         }
 
-        public static void Build(PlayerHealth player, ScoreManager score)
+        public static List<EnemyHealth> Build(PlayerHealth player, ScoreManager score)
         {
             var root = new GameObject(RootName);
             Transform enemies = BuilderUtil.Child(root, "Enemies").transform;
@@ -69,6 +72,8 @@ namespace DungeonKnight.EditorTools
             GameObject charger = BuilderUtil.LoadPrefab("Charger");
             for (int i = 0; i < ChargerHomes.Length; i++)
                 PlaceCharger(charger, enemies, $"Charger {(char)('A' + i)}", ChargerHomes[i].position, ChargerHomes[i].facing, player, score);
+
+            return new List<EnemyHealth>(enemies.GetComponentsInChildren<EnemyHealth>());
         }
 
         static void PlacePatroller(GameObject prefab, Transform enemies, Transform routes, string name, Vector2[] route,

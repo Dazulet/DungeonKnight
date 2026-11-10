@@ -22,6 +22,8 @@ namespace DungeonKnight
         public bool IsAlive => Health > 0;
         public static int ActiveCount => active.Count;
 
+        public event System.Action<EnemyHealth> Died;
+
         void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
@@ -48,6 +50,7 @@ namespace DungeonKnight
 
         void Die()
         {
+            Died?.Invoke(this);
             if (score != null) score.AddScore(scoreValue);
             if (deathEffect != null) Instantiate(deathEffect, transform.position, Quaternion.identity);
             if (coinPrefab != null && Random.value < coinDropChance)

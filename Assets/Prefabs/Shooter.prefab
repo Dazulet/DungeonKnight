@@ -472,6 +472,7 @@ MonoBehaviour:
   health: {fileID: 5758441427223745463}
   motor: {fileID: 8114145231822633853}
   attackScreenMargin: 0.03
+  attackGracePeriod: 1.5
   logStateChanges: 0
   debugState: 
   vision: {fileID: 1836696738929669184}

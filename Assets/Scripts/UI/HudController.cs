@@ -12,6 +12,8 @@ namespace DungeonKnight
         [SerializeField] Sprite heartEmpty;
         [SerializeField] Text scoreText;
         [SerializeField] Text coinText;
+        [SerializeField] LevelGoal goal;
+        [SerializeField] Text goalText;
         [SerializeField, Min(1f)] float popScale = 1.25f;
         [SerializeField, Min(0.01f)] float popTime = 0.18f;
 
@@ -30,6 +32,7 @@ namespace DungeonKnight
         void OnEnable()
         {
             if (player != null) player.HeartsChanged += OnHeartsChanged;
+            if (goal != null) goal.RemainingChanged += OnRemainingChanged;
             if (score != null)
             {
                 score.ScoreChanged += OnScoreChanged;
@@ -40,6 +43,7 @@ namespace DungeonKnight
         void OnDisable()
         {
             if (player != null) player.HeartsChanged -= OnHeartsChanged;
+            if (goal != null) goal.RemainingChanged -= OnRemainingChanged;
             if (score != null)
             {
                 score.ScoreChanged -= OnScoreChanged;
@@ -52,6 +56,12 @@ namespace DungeonKnight
             if (player != null) ShowHearts(player.Hearts, player.MaxHearts);
             if (scoreText != null) scoreText.text = FormatScore(score != null ? score.Score : 0);
             if (coinText != null) coinText.text = FormatCoins(score != null ? score.Coins : 0);
+            if (goal != null) OnRemainingChanged(goal.Remaining);
+        }
+
+        void OnRemainingChanged(int remaining)
+        {
+            if (goalText != null && goal != null) goalText.text = $"TRY {goal.Try}   ENEMIES {remaining}";
         }
 
         void OnHeartsChanged(int current, int max) => ShowHearts(current, max);

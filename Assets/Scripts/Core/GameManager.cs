@@ -4,15 +4,16 @@ using UnityEngine;
 
 namespace DungeonKnight
 {
-    public enum GameState { Playing, Paused, GameOver }
+    public enum GameState { Playing, Paused, GameOver, Victory }
 
-    
     public class GameManager : MonoBehaviour
     {
         [SerializeField] PlayerHealth player;
         [SerializeField, Min(0f)] float gameOverDelay = 0.9f;
+        [SerializeField, Min(0f)] float victoryDelay = 0.9f;
 
         bool playerDead;
+        bool levelComplete;
 
         public GameState State { get; private set; } = GameState.Playing;
         public event Action<GameState> StateChanged;
@@ -40,7 +41,7 @@ namespace DungeonKnight
 
         public void SetPaused(bool paused)
         {
-            if (playerDead || State == GameState.GameOver) return;
+            if (playerDead || levelComplete || State == GameState.GameOver) return;
             GameState target = paused ? GameState.Paused : GameState.Playing;
             if (target == State) return;
             State = target;
@@ -59,9 +60,24 @@ namespace DungeonKnight
             if (pauseStatus && State == GameState.Playing) SetPaused(true);
         }
 
+        public bool CompleteLevel()
+        {
+            if (playerDead || levelComplete) return false;
+            levelComplete = true;
+            if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
+            StartCoroutine(VictoryAfterDelay());
+            return true;
+        }
+
+        IEnumerator VictoryAfterDelay()
+        {
+            yield return new WaitForSecondsRealtime(victoryDelay);
+            SetPausedUnchecked(GameState.Victory);
+        }
+
         void OnPlayerDied()
         {
-            if (playerDead) return;
+            if (playerDead || levelComplete) return;
             playerDead = true;
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(GameOverAfterDelay());
