@@ -34,9 +34,9 @@ Deadline: Canvas closes when your practice lesson starts in week 11 (OR1-1 Wed 1
 
 - [x] `DECISIONS.md` in the repository root, with 4 short entries from this week (3 about the enemies, 1 about moving the work into this repository)
 - [ ] Add the playtest entry with the real names, tries and changed numbers
-- [x] This week's commits are in the repository, on the branch `feature/mobile-ui`: 6 feature commits from 8a601f6 to 40c9094, plus this docs commit
-- [ ] Push the branch: `git push -u origin feature/mobile-ui`. The remote `main` is still at b684ff5, so then merge the branch into `main` on GitHub (pull request), or push to `main` if your course wants everything there.
-- [ ] Origin of the work: the same Assignment 10 code was first committed by mistake in another local project (github.com/Nurzhigit08/DungeonKnight). The README and `DECISIONS.md` say this, and commits 67f197f to 40c9094 name the source commit in their message (8a601f6 and aaac7d6 do not). Agree with Nurzhigit what happens to the copy in his repository, and tell your instructor if they ask about it.
+- [x] This week's commits are in the repository: 6 feature commits from 8a601f6 to 546ba92 and the docs commit 053be6a, merged into `main` with pull request #1 (165c4ea)
+- [x] Pushed to GitHub: `origin/main` is at 165c4ea
+- [ ] Origin of the work: the same Assignment 10 code was first committed by mistake in another local project (github.com/Nurzhigit08/DungeonKnight). The README and `DECISIONS.md` say this. The commit messages themselves do not name the source. Agree with Nurzhigit what happens to the copy in his repository, and tell your instructor if they ask about it.
 - [ ] Be ready to explain any script at the defense (weeks 14–15). Start with `EnemyBrain.cs`, `EnemyVision.cs` and one enemy script.
 
 ## 4. Video (required)

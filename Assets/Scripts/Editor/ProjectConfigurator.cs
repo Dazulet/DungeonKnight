@@ -30,7 +30,7 @@ namespace DungeonKnight.EditorTools
         {
             PlayerSettings.companyName = "Narxoz University";
             PlayerSettings.productName = "Dungeon Knight";
-            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.narxoz.dungeonknight");
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.daulet.dungeonknight");
             PlayerSettings.bundleVersion = "1.0.0";
 
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
