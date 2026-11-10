@@ -15,7 +15,7 @@ namespace DungeonKnight.EditorTools
         static void BuildPatroller(GameObject deathEffect, GameObject coin, GameObject hitEffect)
         {
             GameObject go = CreateShell("Patroller", BuilderUtil.Frames("Enemies/patroller", 2), 5f,
-                health: 4, score: 200, coinChance: 0.6f, radius: 0.34f, deathEffect, coin,
+                health: 6, score: 200, coinChance: 0.6f, radius: 0.34f, deathEffect, coin,
                 out EnemyHealth health, out EnemyMotor motor);
 
             var vision = go.AddComponent<EnemyVision>();
@@ -75,7 +75,7 @@ namespace DungeonKnight.EditorTools
         static void BuildCharger(GameObject deathEffect, GameObject coin)
         {
             GameObject go = CreateShell("Charger", BuilderUtil.Frames("Enemies/charger", 2), 6f,
-                health: 5, score: 300, coinChance: 0.7f, radius: 0.4f, deathEffect, coin,
+                health: 7, score: 300, coinChance: 0.7f, radius: 0.4f, deathEffect, coin,
                 out EnemyHealth health, out EnemyMotor motor);
 
             var vision = go.AddComponent<EnemyVision>();

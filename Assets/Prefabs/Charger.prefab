@@ -710,7 +710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55d2bb976e6a5194380dbf235445aded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyHealth
-  maxHealth: 5
+  maxHealth: 7
   scoreValue: 300
   coinDropChance: 0.7
   hitFlash: {fileID: 2460647037289391639}

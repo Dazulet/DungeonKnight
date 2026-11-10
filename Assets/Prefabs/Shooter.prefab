@@ -627,7 +627,7 @@ MonoBehaviour:
   lockBeforeFire: 0.25
   aimLeadFactor: 0.6
   recoveryDuration: 0.4
-  shotCooldown: 1.8
+  shotCooldown: 1.4
   firstShotDelay: 0.4
   projectileSpeed: 6.5
   projectileRange: 9

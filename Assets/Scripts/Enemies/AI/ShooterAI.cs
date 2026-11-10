@@ -32,7 +32,7 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float lockBeforeFire = 0.25f;
         [SerializeField, Range(0f, 1f)] float aimLeadFactor = 0.6f;
         [SerializeField, Min(0f)] float recoveryDuration = 0.4f;
-        [SerializeField, Min(0f)] float shotCooldown = 1.8f;
+        [SerializeField, Min(0f)] float shotCooldown = 1.4f;
         [SerializeField, Min(0f)] float firstShotDelay = 0.4f;
         [SerializeField, Min(0f)] float projectileSpeed = 6.5f;
         [SerializeField, Min(0f)] float projectileRange = 9f;
