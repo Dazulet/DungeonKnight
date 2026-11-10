@@ -31,7 +31,7 @@ namespace DungeonKnight
         [SerializeField, Range(0.3f, 0.8f)] float aimDuration = 0.7f;
         [SerializeField, Min(0f)] float lockBeforeFire = 0.25f;
         [SerializeField, Range(0f, 1f)] float aimLeadFactor = 0.6f;
-        [SerializeField, Min(0f)] float recoveryDuration = 0.35f;
+        [SerializeField, Min(0f)] float recoveryDuration = 0.4f;
         [SerializeField, Min(0f)] float shotCooldown = 1.8f;
         [SerializeField, Min(0f)] float firstShotDelay = 0.4f;
         [SerializeField, Min(0f)] float projectileSpeed = 6.5f;
@@ -42,6 +42,7 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float searchDuration = 2.5f;
         [SerializeField, Range(0f, 90f)] float searchSweepAngle = 60f;
         [SerializeField, Min(0.1f)] float searchSweepPeriod = 1.6f;
+        [SerializeField, Min(0f)] float hitAlertDistance = 4f;
 
         Vector2 postPosition;
         Vector2 aimDirection = Vector2.right;
@@ -185,7 +186,14 @@ namespace DungeonKnight
 
         protected override void OnStateChanged(ShooterState previous, ShooterState next)
         {
-            if (previous == ShooterState.Aim && next != ShooterState.Recover) telegraph.Hide();
+            if (previous == ShooterState.Aim)
+            {
+                ClearBodyTint();
+                if (next != ShooterState.Recover) telegraph.Hide();
+            }
+            if (next == ShooterState.Engage && (previous == ShooterState.Watch || previous == ShooterState.Search)) IconAlert();
+            if (next == ShooterState.Search) IconSuspicious(float.PositiveInfinity);
+            if (previous == ShooterState.Search && next == ShooterState.Watch) IconClear();
 
             switch (next)
             {
@@ -196,15 +204,31 @@ namespace DungeonKnight
                     retreatStartTime = -1f;
                     if (previous == ShooterState.Watch)
                         nextShotTime = Mathf.Max(nextShotTime, Time.time + firstShotDelay);
-                    sidestepSign = Random.value < 0.5f ? -1f : 1f;
+                    sidestepSign = -sidestepSign;
                     break;
                 case ShooterState.Aim:
                     BeginAim();
+                    ShowWindUpTint();
                     break;
                 case ShooterState.Recover:
                     Fire();
                     break;
             }
+        }
+
+        protected override void OnHit(Vector2 towardShooter)
+        {
+            vision.Alert();
+            if (State != ShooterState.Watch && State != ShooterState.Search) return;
+            lastKnownTargetPosition = Position + towardShooter * hitAlertDistance;
+            motor.Face(towardShooter);
+            if (State == ShooterState.Watch)
+            {
+                ChangeState(ShooterState.Search);
+                return;
+            }
+            RestartState();
+            IconSuspicious(float.PositiveInfinity);
         }
 
         Vector2 PredictedTargetPosition()

@@ -28,6 +28,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "vision", vision);
             BuilderUtil.Set(ai, "telegraph", telegraph);
             BuilderUtil.Set(ai, "strikeEffect", hitEffect);
+            AddReadability(go, ai);
 
             BuilderUtil.SavePrefab(go, "Patroller");
         }
@@ -66,6 +67,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "vision", vision);
             BuilderUtil.Set(ai, "telegraph", telegraph);
             BuilderUtil.Set(ai, "boltPrefab", bolt);
+            AddReadability(go, ai);
 
             BuilderUtil.SavePrefab(go, "Shooter");
         }
@@ -88,7 +90,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "vision", vision);
             BuilderUtil.Set(ai, "telegraph", telegraph);
             BuilderUtil.Set(ai, "body", go.transform.Find("Body").GetComponent<SpriteRenderer>());
-            BuilderUtil.Set(ai, "hitFlash", go.GetComponent<HitFlash>());
+            AddReadability(go, ai);
 
             BuilderUtil.SavePrefab(go, "Charger");
         }
@@ -123,6 +125,37 @@ namespace DungeonKnight.EditorTools
             motor = go.AddComponent<EnemyMotor>();
             BuilderUtil.Set(motor, "body", sr);
             return go;
+        }
+
+        static void AddReadability(GameObject owner, MonoBehaviour brain)
+        {
+            GameObject iconObject = BuilderUtil.Child(owner, "Alert Icon", new Vector3(0f, 0.95f, 0f));
+            SpriteRenderer iconRenderer = BuilderUtil.AddSprite(iconObject, BuilderUtil.Sprite("Effects/alert_exclaim"), SortOrder.EnemyAlert);
+            iconRenderer.enabled = false;
+            var icon = iconObject.AddComponent<EnemyAlertIcon>();
+            BuilderUtil.Set(icon, "icon", iconRenderer);
+            BuilderUtil.Set(icon, "alertSprite", BuilderUtil.Sprite("Effects/alert_exclaim"));
+            BuilderUtil.Set(icon, "suspiciousSprite", BuilderUtil.Sprite("Effects/alert_question"));
+
+            GameObject labelObject = BuilderUtil.Child(owner, "State Label", new Vector3(0f, -0.85f, 0f));
+            var text = labelObject.AddComponent<TextMesh>();
+            Font font = BuilderUtil.PixelFont();
+            text.font = font;
+            text.fontSize = 48;
+            text.characterSize = 0.05f;
+            text.anchor = TextAnchor.UpperCenter;
+            text.alignment = TextAlignment.Center;
+            text.color = new Color(1f, 1f, 1f, 0.85f);
+            text.text = "State";
+            var meshRenderer = labelObject.GetComponent<MeshRenderer>();
+            if (font != null) meshRenderer.sharedMaterial = font.material;
+            meshRenderer.sortingOrder = SortOrder.EnemyAlert + 1;
+            var label = labelObject.AddComponent<EnemyStateLabel>();
+            BuilderUtil.Set(label, "label", text);
+
+            BuilderUtil.Set(brain, "hitFlash", owner.GetComponent<HitFlash>());
+            BuilderUtil.Set(brain, "alertIcon", icon);
+            BuilderUtil.Set(brain, "stateLabel", label);
         }
 
         static AttackTelegraph AddTelegraph(GameObject owner)

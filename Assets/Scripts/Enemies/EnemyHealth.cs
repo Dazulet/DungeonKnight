@@ -23,6 +23,7 @@ namespace DungeonKnight
         public static int ActiveCount => active.Count;
 
         public event System.Action<EnemyHealth> Died;
+        public event System.Action<Vector2> Damaged;
 
         void Awake()
         {
@@ -46,6 +47,7 @@ namespace DungeonKnight
             if (hitFlash != null) hitFlash.Flash();
             if (rb != null) rb.AddForce(push, ForceMode2D.Impulse);
             if (Health <= 0) Die();
+            else Damaged?.Invoke(push);
         }
 
         void Die()

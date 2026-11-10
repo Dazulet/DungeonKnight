@@ -9,7 +9,6 @@ namespace DungeonKnight
         [SerializeField] EnemyVision vision;
         [SerializeField] AttackTelegraph telegraph;
         [SerializeField] SpriteRenderer body;
-        [SerializeField] HitFlash hitFlash;
         [SerializeField] Vector2 homeFacing = Vector2.down;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
@@ -40,10 +39,12 @@ namespace DungeonKnight
         [SerializeField, Range(0.1f, 1f)] float wallCheckRadiusScale = 0.9f;
 
         [Header("Recover")]
-        [SerializeField, Min(0f)] float recoveryDuration = 1.1f;
-        [SerializeField, Min(0f)] float wallStunDuration = 1.6f;
-        [SerializeField, Min(0f)] float chargeCooldown = 2.2f;
+        [SerializeField, Min(0f)] float recoveryDuration = 0.8f;
+        [SerializeField, Min(0f)] float wallStunDuration = 1f;
+        [SerializeField, Min(0f)] float chargeCooldown = 2f;
         [SerializeField] Color stunnedTint = new Color(0.6f, 0.65f, 1f, 1f);
+        [SerializeField, Min(0f)] float hitAlertLookDuration = 1.2f;
+        [SerializeField, Range(1f, 180f)] float prowlTurnStep = 135f;
 
         CircleCollider2D bodyCollider;
         Vector2 homePosition;
@@ -59,7 +60,7 @@ namespace DungeonKnight
         bool hitWall;
         float currentRecovery;
         float nextChargeTime;
-        Color baseBodyColor = Color.white;
+        int prowlStep;
         Vector3 baseBodyPosition;
 
         protected override ChargerState InitialState => ChargerState.Prowl;
@@ -78,7 +79,6 @@ namespace DungeonKnight
             bodyCollider = GetComponent<CircleCollider2D>();
             if (body != null)
             {
-                baseBodyColor = body.color;
                 baseBodyPosition = body.transform.localPosition;
             }
         }
@@ -196,10 +196,12 @@ namespace DungeonKnight
         {
             if (previous == ChargerState.WindUp)
             {
+                ClearBodyTint();
                 body.transform.localPosition = baseBodyPosition;
                 if (next != ChargerState.Charge) telegraph.Hide();
             }
-            if (previous == ChargerState.Recover) SetBodyTint(baseBodyColor);
+            if (previous == ChargerState.Recover) ClearBodyTint();
+            if (previous == ChargerState.Prowl && next == ChargerState.Track) IconAlert();
 
             switch (next)
             {
@@ -209,6 +211,7 @@ namespace DungeonKnight
                     break;
                 case ChargerState.WindUp:
                     BeginWindUp();
+                    ShowWindUpTint();
                     break;
                 case ChargerState.Charge:
                     BeginCharge();
@@ -243,20 +246,27 @@ namespace DungeonKnight
             motor.Halt();
             nextChargeTime = Time.time + chargeCooldown;
             currentRecovery = hitWall ? wallStunDuration : recoveryDuration;
-            SetBodyTint(stunnedTint);
+            TintBody(stunnedTint);
         }
 
-        void SetBodyTint(Color color)
+        protected override void OnHit(Vector2 towardShooter)
         {
-            if (hitFlash != null) hitFlash.SetBaseColor(color);
-            else body.color = color;
+            vision.Alert();
+            if (State != ChargerState.Prowl) return;
+            motor.Stop();
+            motor.Face(towardShooter);
+            hasProwlTarget = false;
+            prowlPauseUntil = Time.time + hitAlertLookDuration;
+            IconSuspicious(hitAlertLookDuration);
         }
 
         Vector2 PickProwlTarget()
         {
             for (int i = 0; i < prowlPointAttempts; i++)
             {
-                Vector2 candidate = homePosition + Random.insideUnitCircle * prowlRadius;
+                Vector2 direction = Quaternion.Euler(0f, 0f, prowlStep * prowlTurnStep) * Vector2.right;
+                prowlStep++;
+                Vector2 candidate = homePosition + direction * prowlRadius;
                 if (Physics2D.OverlapCircle(candidate, BodyRadius + prowlClearance, obstacleMask) != null) continue;
                 Vector2 toCandidate = candidate - BodyCenter;
                 float distance = toCandidate.magnitude;

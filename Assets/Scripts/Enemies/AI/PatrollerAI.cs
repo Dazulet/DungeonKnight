@@ -33,6 +33,8 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float lookAroundDuration = 2.2f;
         [SerializeField, Min(0.05f)] float lookTurnInterval = 0.55f;
         [SerializeField, Range(0f, 180f)] float lookTurnAngle = 90f;
+        [SerializeField, Min(0f)] float hitInvestigateDistance = 3f;
+        [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
         int waypointIndex;
         float pausedUntil;
@@ -171,7 +173,13 @@ namespace DungeonKnight
 
         protected override void OnStateChanged(PatrollerState previous, PatrollerState next)
         {
-            if (previous == PatrollerState.WindUp && next != PatrollerState.Recover) telegraph.Hide();
+            if (previous == PatrollerState.WindUp)
+            {
+                ClearBodyTint();
+                if (next != PatrollerState.Recover) telegraph.Hide();
+            }
+            if (next == PatrollerState.Chase && (previous == PatrollerState.Patrol || previous == PatrollerState.Search)) IconAlert();
+            if (previous == PatrollerState.Search && next == PatrollerState.Patrol) IconClear();
 
             switch (next)
             {
@@ -182,6 +190,7 @@ namespace DungeonKnight
                     break;
                 case PatrollerState.WindUp:
                     BeginWindUp();
+                    ShowWindUpTint();
                     break;
                 case PatrollerState.Recover:
                     Strike();
@@ -189,8 +198,28 @@ namespace DungeonKnight
                 case PatrollerState.Search:
                     lookingAround = false;
                     ResetProgressCheck();
+                    IconSuspicious(float.PositiveInfinity);
                     break;
             }
+        }
+
+        protected override void OnHit(Vector2 towardShooter)
+        {
+            vision.Alert();
+            if (State != PatrollerState.Patrol && State != PatrollerState.Search) return;
+            RaycastHit2D wall = Physics2D.Raycast(Position, towardShooter, hitInvestigateDistance, obstacleMask);
+            float distance = wall.collider != null ? Mathf.Max(0f, wall.distance - 0.5f) : hitInvestigateDistance;
+            lastKnownTargetPosition = Position + towardShooter * distance;
+            motor.Face(towardShooter);
+            if (State == PatrollerState.Patrol)
+            {
+                ChangeState(PatrollerState.Search);
+                return;
+            }
+            lookingAround = false;
+            ResetProgressCheck();
+            RestartState();
+            IconSuspicious(float.PositiveInfinity);
         }
 
         void BeginWindUp()
@@ -210,7 +239,7 @@ namespace DungeonKnight
             if (strikeEffect != null) Instantiate(strikeEffect, strikeCenter, Quaternion.identity);
             if (!HasLivingTarget) return;
             if ((TargetPosition - strikeCenter).sqrMagnitude > strikeRadius * strikeRadius) return;
-            if (!vision.HasLineOfSight(TargetPosition)) return;
+            if (!vision.HasLineOfSightNow(TargetPosition)) return;
             target.TakeDamage(attackDamage);
         }
 
