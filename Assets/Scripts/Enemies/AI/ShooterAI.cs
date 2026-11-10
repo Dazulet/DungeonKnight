@@ -116,7 +116,7 @@ namespace DungeonKnight
             bool cornered = tooClose && Time.time - retreatStartTime >= maxRetreatTime;
             bool goodRange = (!tooClose || cornered) && distance >= minShootDistance && distance <= maxDistance;
 
-            if (Time.time >= nextShotTime && clearShot && goodRange)
+            if (Time.time >= nextShotTime && clearShot && goodRange && CanStartAttack)
             {
                 ChangeState(ShooterState.Aim);
                 return;
@@ -252,6 +252,13 @@ namespace DungeonKnight
         bool CanTrackTarget() => HasLivingTarget && vision.IsInRange(TargetPosition) && vision.HasLineOfSight(TargetPosition);
 
         static Vector2 Rotate(Vector2 v, float degrees) => Quaternion.Euler(0f, 0f, degrees) * v;
+
+        void OnValidate()
+        {
+            lockBeforeFire = Mathf.Min(lockBeforeFire, aimDuration);
+            maxDistance = Mathf.Max(maxDistance, minDistance);
+            minShootDistance = Mathf.Min(minShootDistance, minDistance);
+        }
 
         void OnDrawGizmosSelected()
         {

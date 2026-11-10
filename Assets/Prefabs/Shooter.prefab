@@ -471,6 +471,7 @@ MonoBehaviour:
   target: {fileID: 0}
   health: {fileID: 5758441427223745463}
   motor: {fileID: 8114145231822633853}
+  attackScreenMargin: 0.03
   logStateChanges: 0
   debugState: 
   vision: {fileID: 1836696738929669184}
@@ -689,3 +690,6 @@ MonoBehaviour:
   strikeFlashDuration: 0.12
   pulseSpeed: 16
   pulseStrength: 0.25
+  lineOutlineAlpha: 0.45
+  fillStartAlpha: 0.35
+  fillEndAlpha: 0.8

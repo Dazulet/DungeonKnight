@@ -278,6 +278,9 @@ MonoBehaviour:
   strikeFlashDuration: 0.12
   pulseSpeed: 16
   pulseStrength: 0.25
+  lineOutlineAlpha: 0.45
+  fillStartAlpha: 0.35
+  fillEndAlpha: 0.8
 --- !u!1 &3497900123079980785
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,11 +660,13 @@ MonoBehaviour:
   target: {fileID: 0}
   health: {fileID: 2447823640133998905}
   motor: {fileID: 2566510717814618460}
+  attackScreenMargin: 0.03
   logStateChanges: 0
   debugState: 
   vision: {fileID: 4457857117560967102}
   telegraph: {fileID: 6356127723912731194}
   body: {fileID: 2889492466572261879}
+  hitFlash: {fileID: 2460647037289391639}
   homeFacing: {x: 0, y: -1}
   obstacleMask:
     serializedVersion: 2
@@ -670,6 +675,7 @@ MonoBehaviour:
   prowlRadius: 2.2
   prowlPause: 1
   prowlPointAttempts: 8
+  prowlClearance: 0.1
   stuckCheckInterval: 2
   stuckDistance: 0.3
   trackSpeed: 1.5
@@ -684,6 +690,7 @@ MonoBehaviour:
   hitRadius: 0.6
   attackDamage: 1
   wallCheckDistance: 0.25
+  wallCheckRadiusScale: 0.9
   recoveryDuration: 1.1
   wallStunDuration: 1.6
   chargeCooldown: 2.2

@@ -88,6 +88,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(ai, "vision", vision);
             BuilderUtil.Set(ai, "telegraph", telegraph);
             BuilderUtil.Set(ai, "body", go.transform.Find("Body").GetComponent<SpriteRenderer>());
+            BuilderUtil.Set(ai, "hitFlash", go.GetComponent<HitFlash>());
 
             BuilderUtil.SavePrefab(go, "Charger");
         }

@@ -8,10 +8,12 @@ namespace DungeonKnight
         [SerializeField] protected PlayerHealth target;
         [SerializeField] protected EnemyHealth health;
         [SerializeField] protected EnemyMotor motor;
+        [SerializeField, Range(0f, 0.25f)] float attackScreenMargin = 0.03f;
         [SerializeField] bool logStateChanges;
         [SerializeField] string debugState;
 
         EnemyStateMachine<TState> machine;
+        Camera viewCamera;
 
         protected abstract TState InitialState { get; }
 
@@ -22,7 +24,18 @@ namespace DungeonKnight
         protected Vector2 Position => motor.Position;
         protected Vector2 TargetPosition => target.transform.position;
 
+        protected bool CanStartAttack => HasLivingTarget && IsOnScreen(Position) && IsOnScreen(TargetPosition);
+
         public void Init(PlayerHealth player) => target = player;
+
+        protected bool IsOnScreen(Vector2 point)
+        {
+            if (viewCamera == null) viewCamera = Camera.main;
+            if (viewCamera == null) return true;
+            Vector3 viewport = viewCamera.WorldToViewportPoint(point);
+            return viewport.x >= attackScreenMargin && viewport.x <= 1f - attackScreenMargin
+                && viewport.y >= attackScreenMargin && viewport.y <= 1f - attackScreenMargin;
+        }
 
         protected virtual void Awake()
         {

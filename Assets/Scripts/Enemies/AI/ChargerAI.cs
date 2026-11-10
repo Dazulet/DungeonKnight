@@ -9,6 +9,7 @@ namespace DungeonKnight
         [SerializeField] EnemyVision vision;
         [SerializeField] AttackTelegraph telegraph;
         [SerializeField] SpriteRenderer body;
+        [SerializeField] HitFlash hitFlash;
         [SerializeField] Vector2 homeFacing = Vector2.down;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
@@ -17,6 +18,7 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float prowlRadius = 2.2f;
         [SerializeField, Min(0f)] float prowlPause = 1f;
         [SerializeField, Min(1)] int prowlPointAttempts = 8;
+        [SerializeField, Min(0f)] float prowlClearance = 0.1f;
         [SerializeField, Min(0.1f)] float stuckCheckInterval = 2f;
         [SerializeField, Min(0f)] float stuckDistance = 0.3f;
 
@@ -35,6 +37,7 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float hitRadius = 0.6f;
         [SerializeField, Min(1)] int attackDamage = 1;
         [SerializeField, Min(0f)] float wallCheckDistance = 0.25f;
+        [SerializeField, Range(0.1f, 1f)] float wallCheckRadiusScale = 0.9f;
 
         [Header("Recover")]
         [SerializeField, Min(0f)] float recoveryDuration = 1.1f;
@@ -136,7 +139,7 @@ namespace DungeonKnight
 
             Vector2 toTarget = TargetPosition - Position;
             float distance = toTarget.magnitude;
-            if (Time.time >= nextChargeTime && distance <= chargeTriggerRange && IsLaneClear(toTarget, distance))
+            if (Time.time >= nextChargeTime && distance <= chargeTriggerRange && IsLaneClear(toTarget, distance) && CanStartAttack)
             {
                 ChangeState(ChargerState.WindUp);
                 return;
@@ -196,7 +199,7 @@ namespace DungeonKnight
                 body.transform.localPosition = baseBodyPosition;
                 if (next != ChargerState.Charge) telegraph.Hide();
             }
-            if (previous == ChargerState.Recover) body.color = baseBodyColor;
+            if (previous == ChargerState.Recover) SetBodyTint(baseBodyColor);
 
             switch (next)
             {
@@ -240,7 +243,13 @@ namespace DungeonKnight
             motor.Halt();
             nextChargeTime = Time.time + chargeCooldown;
             currentRecovery = hitWall ? wallStunDuration : recoveryDuration;
-            body.color = stunnedTint;
+            SetBodyTint(stunnedTint);
+        }
+
+        void SetBodyTint(Color color)
+        {
+            if (hitFlash != null) hitFlash.SetBaseColor(color);
+            else body.color = color;
         }
 
         Vector2 PickProwlTarget()
@@ -248,7 +257,7 @@ namespace DungeonKnight
             for (int i = 0; i < prowlPointAttempts; i++)
             {
                 Vector2 candidate = homePosition + Random.insideUnitCircle * prowlRadius;
-                if (Physics2D.OverlapCircle(candidate, BodyRadius + 0.1f, obstacleMask) != null) continue;
+                if (Physics2D.OverlapCircle(candidate, BodyRadius + prowlClearance, obstacleMask) != null) continue;
                 Vector2 toCandidate = candidate - BodyCenter;
                 float distance = toCandidate.magnitude;
                 if (distance < 0.0001f) continue;
@@ -272,7 +281,7 @@ namespace DungeonKnight
 
         bool IsWallAhead()
         {
-            return Physics2D.CircleCast(BodyCenter, BodyRadius * 0.9f, chargeDirection, wallCheckDistance, obstacleMask).collider != null;
+            return Physics2D.CircleCast(BodyCenter, BodyRadius * wallCheckRadiusScale, chargeDirection, wallCheckDistance, obstacleMask).collider != null;
         }
 
         static float SweptDistance(Vector2 from, Vector2 to, Vector2 point)
@@ -300,6 +309,11 @@ namespace DungeonKnight
         {
             progressAnchor = Position;
             nextProgressCheck = Time.time + stuckCheckInterval;
+        }
+
+        void OnValidate()
+        {
+            stalkDistance = Mathf.Min(stalkDistance, chargeTriggerRange);
         }
 
         void OnDrawGizmosSelected()

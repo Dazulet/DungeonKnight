@@ -22,6 +22,12 @@ namespace DungeonKnight
 
         public void Flash() => timeLeft = duration;
 
+        public void SetBaseColor(Color color)
+        {
+            baseColor = color;
+            if (target != null && timeLeft <= 0f) target.color = color;
+        }
+
         void Update()
         {
             if (target == null || timeLeft <= 0f) return;

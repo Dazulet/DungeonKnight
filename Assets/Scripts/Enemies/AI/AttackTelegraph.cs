@@ -18,6 +18,9 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float strikeFlashDuration = 0.12f;
         [SerializeField, Min(0f)] float pulseSpeed = 16f;
         [SerializeField, Range(0f, 1f)] float pulseStrength = 0.25f;
+        [SerializeField, Range(0f, 1f)] float lineOutlineAlpha = 0.45f;
+        [SerializeField, Range(0f, 1f)] float fillStartAlpha = 0.35f;
+        [SerializeField, Range(0f, 1f)] float fillEndAlpha = 0.8f;
 
         Shape shape;
         Vector2 anchor;
@@ -149,10 +152,10 @@ namespace DungeonKnight
             Color baseColor = locked ? lockedColor : warningColor;
             float pulse = 1f - pulseStrength * (0.5f + 0.5f * Mathf.Sin(Time.time * pulseSpeed));
             Color outlineColor = baseColor;
-            outlineColor.a *= shape == Shape.Line ? 0.45f * pulse : pulse;
+            outlineColor.a *= shape == Shape.Line ? lineOutlineAlpha * pulse : pulse;
             outline.color = outlineColor;
             Color fillColor = baseColor;
-            fillColor.a *= Mathf.Lerp(0.35f, 0.8f, progress);
+            fillColor.a *= Mathf.Lerp(fillStartAlpha, fillEndAlpha, progress);
             if (shape == Shape.Line) fillColor.a = baseColor.a;
             fill.color = fillColor;
         }

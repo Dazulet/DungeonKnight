@@ -32,6 +32,7 @@ namespace DungeonKnight
         [SerializeField, Min(0f)] float searchSpeed = 1.8f;
         [SerializeField, Min(0f)] float lookAroundDuration = 2.2f;
         [SerializeField, Min(0.05f)] float lookTurnInterval = 0.55f;
+        [SerializeField, Range(0f, 180f)] float lookTurnAngle = 90f;
 
         int waypointIndex;
         float pausedUntil;
@@ -107,7 +108,7 @@ namespace DungeonKnight
             lastKnownTargetPosition = TargetPosition;
             Vector2 toTarget = lastKnownTargetPosition - Position;
             float distance = toTarget.magnitude;
-            if (distance <= attackRange && Time.time >= nextAttackTime)
+            if (distance <= attackRange && Time.time >= nextAttackTime && CanStartAttack)
             {
                 ChangeState(PatrollerState.WindUp);
                 return;
@@ -162,7 +163,7 @@ namespace DungeonKnight
             motor.Stop();
             if (Time.time >= nextLookTurn)
             {
-                motor.Face(Quaternion.Euler(0f, 0f, 90f) * motor.Facing);
+                motor.Face(Quaternion.Euler(0f, 0f, lookTurnAngle) * motor.Facing);
                 nextLookTurn = Time.time + lookTurnInterval;
             }
             if (Time.time >= lookAroundEnd) ChangeState(PatrollerState.Patrol);
@@ -208,8 +209,9 @@ namespace DungeonKnight
             telegraph.Flash();
             if (strikeEffect != null) Instantiate(strikeEffect, strikeCenter, Quaternion.identity);
             if (!HasLivingTarget) return;
-            if ((TargetPosition - strikeCenter).sqrMagnitude <= strikeRadius * strikeRadius)
-                target.TakeDamage(attackDamage);
+            if ((TargetPosition - strikeCenter).sqrMagnitude > strikeRadius * strikeRadius) return;
+            if (!vision.HasLineOfSight(TargetPosition)) return;
+            target.TakeDamage(attackDamage);
         }
 
         void StartLookingAround()
@@ -253,6 +255,11 @@ namespace DungeonKnight
                 }
             }
             return best;
+        }
+
+        void OnValidate()
+        {
+            holdDistance = Mathf.Min(holdDistance, attackRange);
         }
 
         void OnDrawGizmosSelected()

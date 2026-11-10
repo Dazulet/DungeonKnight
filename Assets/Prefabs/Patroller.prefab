@@ -287,6 +287,7 @@ MonoBehaviour:
   target: {fileID: 0}
   health: {fileID: 3686551581724823949}
   motor: {fileID: 3146658946510535804}
+  attackScreenMargin: 0.03
   logStateChanges: 0
   debugState: 
   vision: {fileID: 1862760801413968155}
@@ -309,6 +310,7 @@ MonoBehaviour:
   searchSpeed: 1.8
   lookAroundDuration: 2.2
   lookTurnInterval: 0.55
+  lookTurnAngle: 90
 --- !u!1 &2105732759087001500
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,6 +461,9 @@ MonoBehaviour:
   strikeFlashDuration: 0.12
   pulseSpeed: 16
   pulseStrength: 0.25
+  lineOutlineAlpha: 0.45
+  fillStartAlpha: 0.35
+  fillEndAlpha: 0.8
 --- !u!1 &3373743895606258335
 GameObject:
   m_ObjectHideFlags: 0
