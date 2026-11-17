@@ -5,8 +5,7 @@ namespace DungeonKnight
 {
     public class PlayerHealth : MonoBehaviour
     {
-        [SerializeField, Min(1)] int maxHearts = 3;
-        [SerializeField, Min(0f)] float invulnerableTime = 1.2f;
+        [SerializeField] PlayerStats stats;
         [SerializeField, Min(0.01f)] float blinkInterval = 0.08f;
         [SerializeField] SpriteRenderer body;
         [SerializeField] HitFlash hitFlash;
@@ -14,7 +13,7 @@ namespace DungeonKnight
 
         float invulnerableUntil;
 
-        public int MaxHearts => maxHearts;
+        public int MaxHearts { get; private set; }
         public int Hearts { get; private set; }
         public bool IsAlive => Hearts > 0;
         public bool IsInvulnerable => Time.time < invulnerableUntil;
@@ -25,19 +24,20 @@ namespace DungeonKnight
 
         void Awake()
         {
-            Hearts = maxHearts;
+            MaxHearts = RefCheck.Valid(this, stats, nameof(stats)) ? stats.maxHearts : 1;
+            Hearts = MaxHearts;
             RefCheck.Valid(this, body, nameof(body));
         }
 
-        void Start() => HeartsChanged?.Invoke(Hearts, maxHearts);
+        void Start() => HeartsChanged?.Invoke(Hearts, MaxHearts);
 
         public bool TakeDamage(int amount)
         {
             if (!IsAlive || IsInvulnerable || amount <= 0) return false;
             Hearts = Mathf.Max(0, Hearts - amount);
-            invulnerableUntil = Time.time + invulnerableTime;
+            invulnerableUntil = Time.time + (stats != null ? stats.invulnerableTime : 0f);
             if (hitFlash != null) hitFlash.Flash();
-            HeartsChanged?.Invoke(Hearts, maxHearts);
+            HeartsChanged?.Invoke(Hearts, MaxHearts);
             Damaged?.Invoke();
             if (Hearts == 0) Die();
             return true;

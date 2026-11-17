@@ -15,10 +15,10 @@ namespace DungeonKnight.EditorTools
 
             BuildProjectile(hit);
             GameObject coin = BuildCoin(sparkle);
-            BuildEnemy("Slime", BuilderUtil.Frames("Enemies/slime", 2), 4f, health: 3, speed: 1.7f, score: 100,
-                coinChance: 0.45f, wobble: 0f, radius: 0.36f, bodyHeight: 0f, puff, coin);
-            BuildEnemy("Bat", BuilderUtil.Frames("Enemies/bat", 2), 10f, health: 2, speed: 3.0f, score: 150,
-                coinChance: 0.3f, wobble: 1.2f, radius: 0.3f, bodyHeight: 0.3f, puff, coin);
+            BuildEnemy("Slime", BuilderUtil.Frames("Enemies/slime", 2), 4f, BuilderUtil.Data<ChaserStats>("Enemies/SlimeStats"),
+                radius: 0.36f, bodyHeight: 0f, puff, coin);
+            BuildEnemy("Bat", BuilderUtil.Frames("Enemies/bat", 2), 10f, BuilderUtil.Data<ChaserStats>("Enemies/BatStats"),
+                radius: 0.3f, bodyHeight: 0.3f, puff, coin);
             EnemyPrefabBuilder.BuildAll(puff, coin, hit);
             BuildKnight(puff);
         }
@@ -88,13 +88,14 @@ namespace DungeonKnight.EditorTools
             col.radius = 0.32f;
 
             var coin = go.AddComponent<CoinPickup>();
+            BuilderUtil.Set(coin, "data", BuilderUtil.Data<CoinData>("Items/CoinData"));
             BuilderUtil.Set(coin, "body", sr);
             BuilderUtil.Set(coin, "collectEffect", sparkle);
             return BuilderUtil.SavePrefab(go, "Coin");
         }
 
-        static void BuildEnemy(string name, Sprite[] frames, float fps, int health, float speed, int score,
-            float coinChance, float wobble, float radius, float bodyHeight, GameObject deathEffect, GameObject coin)
+        static void BuildEnemy(string name, Sprite[] frames, float fps, ChaserStats stats, float radius, float bodyHeight,
+            GameObject deathEffect, GameObject coin)
         {
             var go = new GameObject(name) { layer = GameLayers.Enemy };
             Shadow(go, -0.45f, bodyHeight > 0f ? 0.7f : 0.9f);
@@ -113,16 +114,13 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(flash, "target", sr);
 
             var hp = go.AddComponent<EnemyHealth>();
-            BuilderUtil.Set(hp, "maxHealth", health);
-            BuilderUtil.Set(hp, "scoreValue", score);
-            BuilderUtil.Set(hp, "coinDropChance", coinChance);
+            BuilderUtil.Set(hp, "stats", stats);
             BuilderUtil.Set(hp, "hitFlash", flash);
             BuilderUtil.Set(hp, "deathEffect", deathEffect);
             BuilderUtil.Set(hp, "coinPrefab", coin.GetComponent<CoinPickup>());
 
             var ai = go.AddComponent<EnemyController>();
-            BuilderUtil.Set(ai, "moveSpeed", speed);
-            BuilderUtil.Set(ai, "wobble", wobble);
+            BuilderUtil.Set(ai, "stats", stats);
             BuilderUtil.Set(ai, "body", sr);
 
             BuilderUtil.SavePrefab(go, name);
@@ -149,13 +147,16 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(flash, "target", sr);
 
             var input = go.AddComponent<PlayerInputReader>();
+            var stats = BuilderUtil.Data<PlayerStats>("Player/KnightStats");
 
             var health = go.AddComponent<PlayerHealth>();
+            BuilderUtil.Set(health, "stats", stats);
             BuilderUtil.Set(health, "body", sr);
             BuilderUtil.Set(health, "hitFlash", flash);
             BuilderUtil.Set(health, "deathEffect", deathEffect);
 
             var controller = go.AddComponent<PlayerController>();
+            BuilderUtil.Set(controller, "stats", stats);
             BuilderUtil.Set(controller, "input", input);
             BuilderUtil.Set(controller, "health", health);
             BuilderUtil.Set(controller, "body", sr);
@@ -164,6 +165,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(controller, "walkFrames", walk);
 
             var combat = go.AddComponent<PlayerCombat>();
+            BuilderUtil.Set(combat, "stats", stats);
             BuilderUtil.Set(combat, "input", input);
             BuilderUtil.Set(combat, "controller", controller);
             BuilderUtil.Set(combat, "health", health);

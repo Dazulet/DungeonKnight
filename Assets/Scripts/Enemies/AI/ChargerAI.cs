@@ -8,43 +8,24 @@ namespace DungeonKnight
     {
         [SerializeField] EnemyVision vision;
         [SerializeField] AttackTelegraph telegraph;
+        [SerializeField] ChargerStats stats;
         [SerializeField] SpriteRenderer body;
         [SerializeField] Vector2 homeFacing = Vector2.down;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
-        [Header("Prowl")]
-        [SerializeField, Min(0f)] float prowlSpeed = 1.2f;
-        [SerializeField, Min(0f)] float prowlRadius = 2.2f;
-        [SerializeField, Min(0f)] float prowlPause = 1f;
+        [Header("Navigation")]
         [SerializeField, Min(1)] int prowlPointAttempts = 8;
         [SerializeField, Min(0f)] float prowlClearance = 0.1f;
         [SerializeField, Min(0.1f)] float stuckCheckInterval = 2f;
         [SerializeField, Min(0f)] float stuckDistance = 0.3f;
 
-        [Header("Track")]
-        [SerializeField, Min(0f)] float trackSpeed = 1.5f;
-        [SerializeField, Min(0f)] float chargeTriggerRange = 5f;
-        [SerializeField, Min(0f)] float stalkDistance = 4f;
-
-        [Header("Charge")]
-        [SerializeField, Range(0.3f, 0.8f)] float windUpDuration = 0.65f;
+        [Header("Charge feel")]
         [SerializeField, Min(0f)] float windUpShake = 0.05f;
-        [SerializeField, Min(0f)] float chargeSpeed = 11f;
-        [SerializeField, Min(0f)] float chargeDistance = 6.5f;
         [SerializeField, Min(0f)] float chargeTimeMargin = 0.25f;
         [SerializeField, Min(0.1f)] float laneWidth = 0.9f;
-        [SerializeField, Min(0f)] float hitRadius = 0.6f;
-        [SerializeField, Min(1)] int attackDamage = 1;
         [SerializeField, Min(0f)] float wallCheckDistance = 0.25f;
         [SerializeField, Range(0.1f, 1f)] float wallCheckRadiusScale = 0.9f;
-
-        [Header("Recover")]
-        [SerializeField, Min(0f)] float recoveryDuration = 0.8f;
-        [SerializeField, Min(0f)] float wallStunDuration = 1f;
-        [SerializeField, Min(0f)] float chargeCooldown = 2f;
         [SerializeField] Color stunnedTint = new Color(0.6f, 0.65f, 1f, 1f);
-        [SerializeField, Min(0f)] float hitAlertLookDuration = 1.2f;
-        [SerializeField, Range(1f, 180f)] float prowlTurnStep = 135f;
 
         CircleCollider2D bodyCollider;
         Vector2 homePosition;
@@ -64,15 +45,23 @@ namespace DungeonKnight
         Vector3 baseBodyPosition;
 
         protected override ChargerState InitialState => ChargerState.Prowl;
+        protected override SightedEnemyStats SightStats => stats;
 
         public bool HitWallLastCharge => hitWall;
 
         float BodyRadius => bodyCollider != null ? bodyCollider.radius : 0.35f;
         Vector2 BodyCenter => Position + (bodyCollider != null ? bodyCollider.offset : Vector2.zero);
 
+        public override void Configure(PlayerHealth player, EnemySpawn spawn)
+        {
+            base.Configure(player, spawn);
+            if (spawn.facing.sqrMagnitude > 0.0001f) homeFacing = spawn.facing.normalized;
+        }
+
         protected override void Awake()
         {
             base.Awake();
+            RefCheck.Valid(this, stats, nameof(stats));
             RefCheck.Valid(this, vision, nameof(vision));
             RefCheck.Valid(this, telegraph, nameof(telegraph));
             RefCheck.Valid(this, body, nameof(body));
@@ -87,7 +76,7 @@ namespace DungeonKnight
         {
             homePosition = Position;
             motor.Face(homeFacing);
-            prowlPauseUntil = Time.time + prowlPause;
+            prowlPauseUntil = Time.time + stats.prowlPause;
             ResetProgressCheck();
         }
 
@@ -122,10 +111,10 @@ namespace DungeonKnight
                 hasProwlTarget = true;
                 ResetProgressCheck();
             }
-            if (motor.MoveTo(prowlTarget, prowlSpeed) || IsStuck())
+            if (motor.MoveTo(prowlTarget, stats.prowlSpeed) || IsStuck())
             {
                 hasProwlTarget = false;
-                prowlPauseUntil = Time.time + prowlPause;
+                prowlPauseUntil = Time.time + stats.prowlPause;
             }
         }
 
@@ -139,13 +128,13 @@ namespace DungeonKnight
 
             Vector2 toTarget = TargetPosition - Position;
             float distance = toTarget.magnitude;
-            if (Time.time >= nextChargeTime && distance <= chargeTriggerRange && IsLaneClear(toTarget, distance) && CanStartAttack)
+            if (Time.time >= nextChargeTime && distance <= stats.chargeTriggerRange && IsLaneClear(toTarget, distance) && CanStartAttack)
             {
                 ChangeState(ChargerState.WindUp);
                 return;
             }
 
-            if (distance > stalkDistance) motor.Move(toTarget, trackSpeed);
+            if (distance > stats.stalkDistance) motor.Move(toTarget, stats.trackSpeed);
             else motor.Stop();
             motor.Face(toTarget);
         }
@@ -159,18 +148,18 @@ namespace DungeonKnight
                 return;
             }
             body.transform.localPosition = baseBodyPosition + (Vector3)(Random.insideUnitCircle * windUpShake);
-            telegraph.SetProgress(TimeInState / windUpDuration);
-            if (TimeInState >= windUpDuration) ChangeState(ChargerState.Charge);
+            telegraph.SetProgress(TimeInState / stats.windUpDuration);
+            if (TimeInState >= stats.windUpDuration) ChangeState(ChargerState.Charge);
         }
 
         void TickCharge()
         {
-            motor.Dash(chargeDirection, chargeSpeed);
+            motor.Dash(chargeDirection, stats.chargeSpeed);
             Vector2 current = Position;
-            if (!hitThisCharge && HasLivingTarget && SweptDistance(previousChargePosition, current, TargetPosition) <= hitRadius)
+            if (!hitThisCharge && HasLivingTarget && SweptDistance(previousChargePosition, current, TargetPosition) <= stats.hitRadius)
             {
                 hitThisCharge = true;
-                target.TakeDamage(attackDamage);
+                target.TakeDamage(stats.attackDamage);
             }
             previousChargePosition = current;
 
@@ -181,8 +170,8 @@ namespace DungeonKnight
                 return;
             }
             float travelled = (current - chargeStart).magnitude;
-            float maxTime = chargeSpeed > 0f ? chargeDistance / chargeSpeed + chargeTimeMargin : 0f;
-            if (travelled >= chargeDistance || TimeInState >= maxTime) ChangeState(ChargerState.Recover);
+            float maxTime = stats.chargeSpeed > 0f ? stats.chargeDistance / stats.chargeSpeed + chargeTimeMargin : 0f;
+            if (travelled >= stats.chargeDistance || TimeInState >= maxTime) ChangeState(ChargerState.Recover);
         }
 
         void TickRecover()
@@ -207,7 +196,7 @@ namespace DungeonKnight
             {
                 case ChargerState.Prowl:
                     hasProwlTarget = false;
-                    prowlPauseUntil = Time.time + prowlPause;
+                    prowlPauseUntil = Time.time + stats.prowlPause;
                     break;
                 case ChargerState.WindUp:
                     BeginWindUp();
@@ -238,14 +227,14 @@ namespace DungeonKnight
             hitThisCharge = false;
             hitWall = false;
             telegraph.Flash();
-            motor.Dash(chargeDirection, chargeSpeed);
+            motor.Dash(chargeDirection, stats.chargeSpeed);
         }
 
         void BeginRecover()
         {
             motor.Halt();
-            nextChargeTime = Time.time + chargeCooldown;
-            currentRecovery = hitWall ? wallStunDuration : recoveryDuration;
+            nextChargeTime = Time.time + stats.chargeCooldown;
+            currentRecovery = hitWall ? stats.wallStunDuration : stats.recoveryDuration;
             TintBody(stunnedTint);
         }
 
@@ -256,17 +245,17 @@ namespace DungeonKnight
             motor.Stop();
             motor.Face(towardShooter);
             hasProwlTarget = false;
-            prowlPauseUntil = Time.time + hitAlertLookDuration;
-            IconSuspicious(hitAlertLookDuration);
+            prowlPauseUntil = Time.time + stats.hitAlertLookDuration;
+            IconSuspicious(stats.hitAlertLookDuration);
         }
 
         Vector2 PickProwlTarget()
         {
             for (int i = 0; i < prowlPointAttempts; i++)
             {
-                Vector2 direction = Quaternion.Euler(0f, 0f, prowlStep * prowlTurnStep) * Vector2.right;
+                Vector2 direction = Quaternion.Euler(0f, 0f, prowlStep * stats.prowlTurnStep) * Vector2.right;
                 prowlStep++;
-                Vector2 candidate = homePosition + direction * prowlRadius;
+                Vector2 candidate = homePosition + direction * stats.prowlRadius;
                 if (Physics2D.OverlapCircle(candidate, BodyRadius + prowlClearance, obstacleMask) != null) continue;
                 Vector2 toCandidate = candidate - BodyCenter;
                 float distance = toCandidate.magnitude;
@@ -279,8 +268,8 @@ namespace DungeonKnight
 
         float LaneLength(Vector2 direction)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(BodyCenter, BodyRadius, direction, chargeDistance, obstacleMask);
-            return (hit.collider != null ? hit.distance : chargeDistance) + BodyRadius;
+            RaycastHit2D hit = Physics2D.CircleCast(BodyCenter, BodyRadius, direction, stats.chargeDistance, obstacleMask);
+            return (hit.collider != null ? hit.distance : stats.chargeDistance) + BodyRadius;
         }
 
         bool IsLaneClear(Vector2 toTarget, float distance)
@@ -321,18 +310,15 @@ namespace DungeonKnight
             nextProgressCheck = Time.time + stuckCheckInterval;
         }
 
-        void OnValidate()
-        {
-            stalkDistance = Mathf.Min(stalkDistance, chargeTriggerRange);
-        }
 
         void OnDrawGizmosSelected()
         {
+            if (stats == null) return;
             Vector3 home = Application.isPlaying ? (Vector3)homePosition : transform.position;
             Gizmos.color = new Color(0.4f, 0.9f, 1f, 0.8f);
-            Gizmos.DrawWireSphere(home, prowlRadius);
+            Gizmos.DrawWireSphere(home, stats.prowlRadius);
             Gizmos.color = new Color(1f, 0.55f, 0.1f, 0.8f);
-            Gizmos.DrawWireSphere(transform.position, chargeTriggerRange);
+            Gizmos.DrawWireSphere(transform.position, stats.chargeTriggerRange);
         }
     }
 }

@@ -333,8 +333,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 424fbaf2a3df5a64c906ab42a5f5cccf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.CoinPickup
-  magnetRange: 2.2
-  magnetSpeed: 9
-  lifetime: 25
+  data: {fileID: 11400000, guid: 86759a133de905a43bd72558cf326fe2, type: 2}
   body: {fileID: 3011683043288332152}
   collectEffect: {fileID: 959308726658945867, guid: a6faf7994da17ee458972b8ecfac1139, type: 3}

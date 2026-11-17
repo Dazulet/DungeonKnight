@@ -366,8 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65d34bc8812e03849a01c72e7c69f3e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.PlayerHealth
-  maxHearts: 3
-  invulnerableTime: 1.2
+  stats: {fileID: 11400000, guid: 89aa857571753874bb65edacf0c6f524, type: 2}
   blinkInterval: 0.08
   body: {fileID: 4904790512004206525}
   hitFlash: {fileID: 6453969549711420172}
@@ -384,6 +383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69d1d35e6d9d79f469c66508c7813b8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.PlayerController
+  stats: {fileID: 11400000, guid: 89aa857571753874bb65edacf0c6f524, type: 2}
   input: {fileID: 6434958978622657775}
   health: {fileID: 3502457081720148988}
   body: {fileID: 4904790512004206525}
@@ -396,8 +396,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 58ca845bf5ffa51429772ed5f060088c, type: 3}
   - {fileID: 21300000, guid: 888f81f6b4697bf48ace8bdb799dc97b, type: 3}
   - {fileID: 21300000, guid: d5fe7df1905950c43b3973ad201b7a46, type: 3}
-  moveSpeed: 5
-  acceleration: 40
 --- !u!114 &1581316321591260001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -410,14 +408,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7fefe7fdf32a5c4aa9fbbdea808574e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.PlayerCombat
+  stats: {fileID: 11400000, guid: 89aa857571753874bb65edacf0c6f524, type: 2}
   input: {fileID: 6434958978622657775}
   controller: {fileID: 75313430442199304}
   health: {fileID: 3502457081720148988}
   projectilePrefab: {fileID: 7794199296412380192, guid: ac5f4c1066c64724e86663b7f13d0f7b, type: 3}
   muzzle: {fileID: 8859390420180259900}
-  cooldown: 0.28
-  autoAimRange: 9
-  spreadDegrees: 3
 --- !u!1 &8408550495996001065
 GameObject:
   m_ObjectHideFlags: 0

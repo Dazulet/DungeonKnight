@@ -5,14 +5,13 @@ namespace DungeonKnight
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerController : MonoBehaviour
     {
+        [SerializeField] PlayerStats stats;
         [SerializeField] PlayerInputReader input;
         [SerializeField] PlayerHealth health;
         [SerializeField] SpriteRenderer body;
         [SerializeField] SpriteFlipbook animator;
         [SerializeField] Sprite[] idleFrames;
         [SerializeField] Sprite[] walkFrames;
-        [SerializeField, Min(0f)] float moveSpeed = 5f;
-        [SerializeField, Min(0f)] float acceleration = 40f;
 
         Rigidbody2D rb;
         Vector2 velocity;
@@ -22,6 +21,7 @@ namespace DungeonKnight
         void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
+            RefCheck.Valid(this, stats, nameof(stats));
             RefCheck.Valid(this, input, nameof(input));
             RefCheck.Valid(this, health, nameof(health));
             RefCheck.Valid(this, body, nameof(body));
@@ -44,10 +44,10 @@ namespace DungeonKnight
 
         void FixedUpdate()
         {
-            if (input == null) return;
+            if (input == null || stats == null) return;
             bool alive = health == null || health.IsAlive;
-            Vector2 target = alive ? Vector2.ClampMagnitude(input.Move, 1f) * moveSpeed : Vector2.zero;
-            velocity = Vector2.MoveTowards(velocity, target, acceleration * Time.fixedDeltaTime);
+            Vector2 target = alive ? Vector2.ClampMagnitude(input.Move, 1f) * stats.moveSpeed : Vector2.zero;
+            velocity = Vector2.MoveTowards(velocity, target, stats.acceleration * Time.fixedDeltaTime);
             rb.SetVelocity(velocity);
         }
 

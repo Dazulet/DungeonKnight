@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66a610258f5e1664fb70262288ce0984, type: 3}
+  m_Name: ChargerStats
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.ChargerStats
+  maxHealth: 7
+  scoreValue: 300
+  coinDropChance: 0.7
+  viewDistance: 6
+  fieldOfView: 100
+  alertRangeMultiplier: 1.6
+  alertDuration: 3
+  attackGracePeriod: 1.5
+  attackScreenMargin: 0.03
+  prowlSpeed: 1.2
+  prowlRadius: 2.2
+  prowlPause: 1
+  prowlTurnStep: 135
+  trackSpeed: 1.5
+  chargeTriggerRange: 5
+  stalkDistance: 4
+  windUpDuration: 0.65
+  chargeSpeed: 11
+  chargeDistance: 6.5
+  hitRadius: 0.6
+  attackDamage: 1
+  recoveryDuration: 0.8
+  wallStunDuration: 1
+  chargeCooldown: 2
+  hitAlertLookDuration: 1.2

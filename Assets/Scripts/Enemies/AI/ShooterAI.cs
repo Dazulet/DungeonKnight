@@ -8,41 +8,11 @@ namespace DungeonKnight
     {
         [SerializeField] EnemyVision vision;
         [SerializeField] AttackTelegraph telegraph;
+        [SerializeField] ShooterStats stats;
         [SerializeField] EnemyBolt boltPrefab;
         [SerializeField] Vector2 muzzleOffset = Vector2.zero;
         [SerializeField] Vector2 postFacing = Vector2.right;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
-
-        [Header("Watch")]
-        [SerializeField, Min(0f)] float returnSpeed = 1.5f;
-        [SerializeField, Range(0f, 90f)] float watchSweepAngle = 40f;
-        [SerializeField, Min(0.1f)] float watchSweepPeriod = 3.2f;
-
-        [Header("Spacing")]
-        [SerializeField, Min(0f)] float minDistance = 2.5f;
-        [SerializeField, Min(0f)] float maxDistance = 7f;
-        [SerializeField, Min(0f)] float retreatSpeed = 1.7f;
-        [SerializeField, Min(0f)] float approachSpeed = 1.8f;
-        [SerializeField, Min(0f)] float sidestepSpeed = 1.6f;
-        [SerializeField, Min(0f)] float minShootDistance = 2f;
-        [SerializeField, Min(0f)] float maxRetreatTime = 1.2f;
-
-        [Header("Attack")]
-        [SerializeField, Range(0.3f, 0.8f)] float aimDuration = 0.7f;
-        [SerializeField, Min(0f)] float lockBeforeFire = 0.25f;
-        [SerializeField, Range(0f, 1f)] float aimLeadFactor = 0.6f;
-        [SerializeField, Min(0f)] float recoveryDuration = 0.4f;
-        [SerializeField, Min(0f)] float shotCooldown = 1.4f;
-        [SerializeField, Min(0f)] float firstShotDelay = 0.4f;
-        [SerializeField, Min(0f)] float projectileSpeed = 6.5f;
-        [SerializeField, Min(0f)] float projectileRange = 9f;
-        [SerializeField, Min(1)] int attackDamage = 1;
-
-        [Header("Search")]
-        [SerializeField, Min(0f)] float searchDuration = 2.5f;
-        [SerializeField, Range(0f, 90f)] float searchSweepAngle = 60f;
-        [SerializeField, Min(0.1f)] float searchSweepPeriod = 1.6f;
-        [SerializeField, Min(0f)] float hitAlertDistance = 4f;
 
         Vector2 postPosition;
         Vector2 aimDirection = Vector2.right;
@@ -54,13 +24,21 @@ namespace DungeonKnight
         Rigidbody2D targetBody;
 
         protected override ShooterState InitialState => ShooterState.Watch;
+        protected override SightedEnemyStats SightStats => stats;
 
         Vector2 Muzzle => Position + muzzleOffset;
         float BoltRadius => boltPrefab != null ? boltPrefab.Radius : 0f;
 
+        public override void Configure(PlayerHealth player, EnemySpawn spawn)
+        {
+            base.Configure(player, spawn);
+            if (spawn.facing.sqrMagnitude > 0.0001f) postFacing = spawn.facing.normalized;
+        }
+
         protected override void Awake()
         {
             base.Awake();
+            RefCheck.Valid(this, stats, nameof(stats));
             RefCheck.Valid(this, vision, nameof(vision));
             RefCheck.Valid(this, telegraph, nameof(telegraph));
             RefCheck.Valid(this, boltPrefab, nameof(boltPrefab));
@@ -93,9 +71,9 @@ namespace DungeonKnight
                 ChangeState(ShooterState.Engage);
                 return;
             }
-            if (!motor.MoveTo(postPosition, returnSpeed)) return;
+            if (!motor.MoveTo(postPosition, stats.returnSpeed)) return;
             sweepClock += Time.deltaTime;
-            float sweep = Mathf.Sin(sweepClock * Mathf.PI * 2f / watchSweepPeriod) * watchSweepAngle;
+            float sweep = Mathf.Sin(sweepClock * Mathf.PI * 2f / stats.watchSweepPeriod) * stats.watchSweepAngle;
             motor.Face(Rotate(postFacing, sweep));
         }
 
@@ -111,11 +89,11 @@ namespace DungeonKnight
             Vector2 toTarget = lastKnownTargetPosition - Position;
             float distance = toTarget.magnitude;
             bool clearShot = HasClearShot(lastKnownTargetPosition);
-            bool tooClose = distance < minDistance;
+            bool tooClose = distance < stats.minDistance;
             if (!tooClose) retreatStartTime = -1f;
             else if (retreatStartTime < 0f) retreatStartTime = Time.time;
-            bool cornered = tooClose && Time.time - retreatStartTime >= maxRetreatTime;
-            bool goodRange = (!tooClose || cornered) && distance >= minShootDistance && distance <= maxDistance;
+            bool cornered = tooClose && Time.time - retreatStartTime >= stats.maxRetreatTime;
+            bool goodRange = (!tooClose || cornered) && distance >= stats.minShootDistance && distance <= stats.maxDistance;
 
             if (Time.time >= nextShotTime && clearShot && goodRange && CanStartAttack)
             {
@@ -123,9 +101,9 @@ namespace DungeonKnight
                 return;
             }
 
-            if (tooClose) motor.Move(-toTarget, retreatSpeed);
-            else if (distance > maxDistance) motor.Move(toTarget, approachSpeed);
-            else if (!clearShot) motor.Move(new Vector2(-toTarget.y, toTarget.x) * sidestepSign, sidestepSpeed);
+            if (tooClose) motor.Move(-toTarget, stats.retreatSpeed);
+            else if (distance > stats.maxDistance) motor.Move(toTarget, stats.approachSpeed);
+            else if (!clearShot) motor.Move(new Vector2(-toTarget.y, toTarget.x) * sidestepSign, stats.sidestepSpeed);
             else motor.Stop();
             motor.Face(toTarget);
         }
@@ -139,7 +117,7 @@ namespace DungeonKnight
                 return;
             }
 
-            bool tracking = TimeInState < aimDuration - lockBeforeFire;
+            bool tracking = TimeInState < stats.aimDuration - stats.lockBeforeFire;
             if (tracking)
             {
                 if (!vision.HasLineOfSight(TargetPosition))
@@ -157,14 +135,14 @@ namespace DungeonKnight
 
             motor.Face(aimDirection);
             telegraph.UpdateLine(Muzzle, aimDirection, ShotLength(aimDirection));
-            telegraph.SetProgress(TimeInState / aimDuration);
-            if (TimeInState >= aimDuration) ChangeState(ShooterState.Recover);
+            telegraph.SetProgress(TimeInState / stats.aimDuration);
+            if (TimeInState >= stats.aimDuration) ChangeState(ShooterState.Recover);
         }
 
         void TickRecover()
         {
             motor.Stop();
-            if (TimeInState < recoveryDuration) return;
+            if (TimeInState < stats.recoveryDuration) return;
             if (CanTrackTarget()) ChangeState(ShooterState.Engage);
             else ChangeState(HasLivingTarget ? ShooterState.Search : ShooterState.Watch);
         }
@@ -179,9 +157,9 @@ namespace DungeonKnight
             motor.Stop();
             Vector2 toLastKnown = lastKnownTargetPosition - Position;
             if (toLastKnown.sqrMagnitude < 0.0001f) toLastKnown = motor.Facing;
-            float sweep = Mathf.Sin(TimeInState * Mathf.PI * 2f / searchSweepPeriod) * searchSweepAngle;
+            float sweep = Mathf.Sin(TimeInState * Mathf.PI * 2f / stats.searchSweepPeriod) * stats.searchSweepAngle;
             motor.Face(Rotate(toLastKnown, sweep));
-            if (TimeInState >= searchDuration) ChangeState(ShooterState.Watch);
+            if (TimeInState >= stats.searchDuration) ChangeState(ShooterState.Watch);
         }
 
         protected override void OnStateChanged(ShooterState previous, ShooterState next)
@@ -203,7 +181,7 @@ namespace DungeonKnight
                 case ShooterState.Engage:
                     retreatStartTime = -1f;
                     if (previous == ShooterState.Watch)
-                        nextShotTime = Mathf.Max(nextShotTime, Time.time + firstShotDelay);
+                        nextShotTime = Mathf.Max(nextShotTime, Time.time + stats.firstShotDelay);
                     sidestepSign = -sidestepSign;
                     break;
                 case ShooterState.Aim:
@@ -220,7 +198,7 @@ namespace DungeonKnight
         {
             vision.Alert();
             if (State != ShooterState.Watch && State != ShooterState.Search) return;
-            lastKnownTargetPosition = Position + towardShooter * hitAlertDistance;
+            lastKnownTargetPosition = Position + towardShooter * stats.hitAlertDistance;
             motor.Face(towardShooter);
             if (State == ShooterState.Watch)
             {
@@ -234,11 +212,11 @@ namespace DungeonKnight
         Vector2 PredictedTargetPosition()
         {
             if (targetBody == null) targetBody = target.GetComponent<Rigidbody2D>();
-            if (targetBody == null || projectileSpeed <= 0f) return TargetPosition;
+            if (targetBody == null || stats.projectileSpeed <= 0f) return TargetPosition;
             float distance = Vector2.Distance(TargetPosition, Muzzle);
-            float remainingAim = Mathf.Max(0f, aimDuration - TimeInState);
-            float leadTime = remainingAim + distance / projectileSpeed;
-            return TargetPosition + targetBody.GetVelocity() * leadTime * aimLeadFactor;
+            float remainingAim = Mathf.Max(0f, stats.aimDuration - TimeInState);
+            float leadTime = remainingAim + distance / stats.projectileSpeed;
+            return TargetPosition + targetBody.GetVelocity() * leadTime * stats.aimLeadFactor;
         }
 
         void BeginAim()
@@ -251,16 +229,16 @@ namespace DungeonKnight
 
         void Fire()
         {
-            nextShotTime = Time.time + shotCooldown;
+            nextShotTime = Time.time + stats.shotCooldown;
             telegraph.Flash();
             EnemyBolt bolt = Instantiate(boltPrefab, Muzzle, Quaternion.identity);
-            bolt.Launch(aimDirection, projectileSpeed, attackDamage, projectileRange);
+            bolt.Launch(aimDirection, stats.projectileSpeed, stats.attackDamage, stats.projectileRange);
         }
 
         float ShotLength(Vector2 direction)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(Muzzle, BoltRadius, direction, projectileRange, obstacleMask);
-            return hit.collider != null ? hit.distance : projectileRange;
+            RaycastHit2D hit = Physics2D.CircleCast(Muzzle, BoltRadius, direction, stats.projectileRange, obstacleMask);
+            return hit.collider != null ? hit.distance : stats.projectileRange;
         }
 
         bool HasClearShot(Vector2 point)
@@ -277,21 +255,16 @@ namespace DungeonKnight
 
         static Vector2 Rotate(Vector2 v, float degrees) => Quaternion.Euler(0f, 0f, degrees) * v;
 
-        void OnValidate()
-        {
-            lockBeforeFire = Mathf.Min(lockBeforeFire, aimDuration);
-            maxDistance = Mathf.Max(maxDistance, minDistance);
-            minShootDistance = Mathf.Min(minShootDistance, minDistance);
-        }
 
         void OnDrawGizmosSelected()
         {
             Vector3 center = Application.isPlaying ? (Vector3)postPosition : transform.position;
-            Gizmos.color = new Color(1f, 0.4f, 0.8f, 0.8f);
-            Gizmos.DrawWireSphere(transform.position, minDistance);
-            Gizmos.DrawWireSphere(transform.position, maxDistance);
             Gizmos.color = new Color(0.4f, 0.9f, 1f, 0.9f);
             Gizmos.DrawWireCube(center, Vector3.one * 0.3f);
+            if (stats == null) return;
+            Gizmos.color = new Color(1f, 0.4f, 0.8f, 0.8f);
+            Gizmos.DrawWireSphere(transform.position, stats.minDistance);
+            Gizmos.DrawWireSphere(transform.position, stats.maxDistance);
         }
     }
 }

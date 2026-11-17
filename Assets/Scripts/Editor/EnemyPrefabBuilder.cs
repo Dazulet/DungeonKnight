@@ -1,9 +1,20 @@
+using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace DungeonKnight.EditorTools
 {
     public static class EnemyPrefabBuilder
     {
+        [MenuItem("Dungeon Knight/Rebuild Enemies", priority = 10)]
+        public static void RebuildEnemies()
+        {
+            if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildAll(BuilderUtil.LoadPrefab("DeathPuff"), BuilderUtil.LoadPrefab("Coin"), BuilderUtil.LoadPrefab("HitEffect"));
+            AssetDatabase.SaveAssets();
+            Debug.Log("Dungeon Knight: enemy prefabs rebuilt. Levels spawn them from Assets/Data/Levels.");
+        }
+
         public static void BuildAll(GameObject deathEffect, GameObject coin, GameObject hitEffect)
         {
             BuildPatroller(deathEffect, coin, hitEffect);
@@ -14,15 +25,15 @@ namespace DungeonKnight.EditorTools
 
         static void BuildPatroller(GameObject deathEffect, GameObject coin, GameObject hitEffect)
         {
+            var stats = BuilderUtil.Data<PatrollerStats>("Enemies/PatrollerStats");
             GameObject go = CreateShell("Patroller", BuilderUtil.Frames("Enemies/patroller", 2), 5f,
-                health: 6, score: 200, coinChance: 0.6f, radius: 0.34f, deathEffect, coin,
-                out EnemyHealth health, out EnemyMotor motor);
+                stats, radius: 0.34f, deathEffect, coin, out EnemyHealth health, out EnemyMotor motor);
 
-            var vision = go.AddComponent<EnemyVision>();
-            BuilderUtil.Set(vision, "motor", motor);
+            EnemyVision vision = AddVision(go, motor, stats);
             AttackTelegraph telegraph = AddTelegraph(go);
 
             var ai = go.AddComponent<PatrollerAI>();
+            BuilderUtil.Set(ai, "stats", stats);
             BuilderUtil.Set(ai, "health", health);
             BuilderUtil.Set(ai, "motor", motor);
             BuilderUtil.Set(ai, "vision", vision);
@@ -51,17 +62,15 @@ namespace DungeonKnight.EditorTools
 
         static void BuildShooter(GameObject deathEffect, GameObject coin, EnemyBolt bolt)
         {
+            var stats = BuilderUtil.Data<ShooterStats>("Enemies/ShooterStats");
             GameObject go = CreateShell("Shooter", BuilderUtil.Frames("Enemies/shooter", 2), 3f,
-                health: 3, score: 250, coinChance: 0.6f, radius: 0.32f, deathEffect, coin,
-                out EnemyHealth health, out EnemyMotor motor);
+                stats, radius: 0.32f, deathEffect, coin, out EnemyHealth health, out EnemyMotor motor);
 
-            var vision = go.AddComponent<EnemyVision>();
-            BuilderUtil.Set(vision, "motor", motor);
-            BuilderUtil.Set(vision, "viewDistance", 7.5f);
-            BuilderUtil.Set(vision, "fieldOfView", 120f);
+            EnemyVision vision = AddVision(go, motor, stats);
             AttackTelegraph telegraph = AddTelegraph(go);
 
             var ai = go.AddComponent<ShooterAI>();
+            BuilderUtil.Set(ai, "stats", stats);
             BuilderUtil.Set(ai, "health", health);
             BuilderUtil.Set(ai, "motor", motor);
             BuilderUtil.Set(ai, "vision", vision);
@@ -74,17 +83,15 @@ namespace DungeonKnight.EditorTools
 
         static void BuildCharger(GameObject deathEffect, GameObject coin)
         {
+            var stats = BuilderUtil.Data<ChargerStats>("Enemies/ChargerStats");
             GameObject go = CreateShell("Charger", BuilderUtil.Frames("Enemies/charger", 2), 6f,
-                health: 7, score: 300, coinChance: 0.7f, radius: 0.4f, deathEffect, coin,
-                out EnemyHealth health, out EnemyMotor motor);
+                stats, radius: 0.4f, deathEffect, coin, out EnemyHealth health, out EnemyMotor motor);
 
-            var vision = go.AddComponent<EnemyVision>();
-            BuilderUtil.Set(vision, "motor", motor);
-            BuilderUtil.Set(vision, "viewDistance", 6f);
-            BuilderUtil.Set(vision, "fieldOfView", 100f);
+            EnemyVision vision = AddVision(go, motor, stats);
             AttackTelegraph telegraph = AddTelegraph(go);
 
             var ai = go.AddComponent<ChargerAI>();
+            BuilderUtil.Set(ai, "stats", stats);
             BuilderUtil.Set(ai, "health", health);
             BuilderUtil.Set(ai, "motor", motor);
             BuilderUtil.Set(ai, "vision", vision);
@@ -95,8 +102,8 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.SavePrefab(go, "Charger");
         }
 
-        static GameObject CreateShell(string name, Sprite[] frames, float fps, int health, int score, float coinChance,
-            float radius, GameObject deathEffect, GameObject coin, out EnemyHealth enemyHealth, out EnemyMotor motor)
+        static GameObject CreateShell(string name, Sprite[] frames, float fps, EnemyStats stats, float radius,
+            GameObject deathEffect, GameObject coin, out EnemyHealth enemyHealth, out EnemyMotor motor)
         {
             var go = new GameObject(name) { layer = GameLayers.Enemy };
             PrefabBuilder.Shadow(go, -0.45f, 0.9f);
@@ -115,9 +122,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(flash, "target", sr);
 
             enemyHealth = go.AddComponent<EnemyHealth>();
-            BuilderUtil.Set(enemyHealth, "maxHealth", health);
-            BuilderUtil.Set(enemyHealth, "scoreValue", score);
-            BuilderUtil.Set(enemyHealth, "coinDropChance", coinChance);
+            BuilderUtil.Set(enemyHealth, "stats", stats);
             BuilderUtil.Set(enemyHealth, "hitFlash", flash);
             BuilderUtil.Set(enemyHealth, "deathEffect", deathEffect);
             BuilderUtil.Set(enemyHealth, "coinPrefab", coin.GetComponent<CoinPickup>());
@@ -125,6 +130,14 @@ namespace DungeonKnight.EditorTools
             motor = go.AddComponent<EnemyMotor>();
             BuilderUtil.Set(motor, "body", sr);
             return go;
+        }
+
+        static EnemyVision AddVision(GameObject owner, EnemyMotor motor, SightedEnemyStats stats)
+        {
+            var vision = owner.AddComponent<EnemyVision>();
+            BuilderUtil.Set(vision, "motor", motor);
+            BuilderUtil.Set(vision, "stats", stats);
+            return vision;
         }
 
         static void AddReadability(GameObject owner, MonoBehaviour brain)

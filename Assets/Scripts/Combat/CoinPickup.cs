@@ -4,9 +4,7 @@ namespace DungeonKnight
 {
     public class CoinPickup : MonoBehaviour
     {
-        [SerializeField, Min(0f)] float magnetRange = 2.2f;
-        [SerializeField, Min(0f)] float magnetSpeed = 9f;
-        [SerializeField, Min(1f)] float lifetime = 25f;
+        [SerializeField] CoinData data;
         [SerializeField] SpriteRenderer body;
         [SerializeField] GameObject collectEffect;
 
@@ -22,10 +20,13 @@ namespace DungeonKnight
             player = playerTransform;
         }
 
+        void Awake() => RefCheck.Valid(this, data, nameof(data));
+
         void Start() => popVelocity = Random.insideUnitCircle.normalized * 2.5f;
 
         void Update()
         {
+            if (data == null) return;
             age += Time.deltaTime;
             Vector3 pos = transform.position;
 
@@ -35,21 +36,21 @@ namespace DungeonKnight
             if (player != null && player.gameObject.activeInHierarchy)
             {
                 Vector2 toPlayer = player.position - pos;
-                if (toPlayer.sqrMagnitude < magnetRange * magnetRange)
-                    pos = Vector3.MoveTowards(pos, player.position, magnetSpeed * Time.deltaTime);
+                if (toPlayer.sqrMagnitude < data.magnetRange * data.magnetRange)
+                    pos = Vector3.MoveTowards(pos, player.position, data.magnetSpeed * Time.deltaTime);
             }
             transform.position = pos;
 
-            if (body != null && age > lifetime - 3f)
+            if (body != null && age > data.lifetime - 3f)
                 body.enabled = Mathf.Repeat(age, 0.2f) > 0.1f;
-            if (age > lifetime) Destroy(gameObject);
+            if (age > data.lifetime) Destroy(gameObject);
         }
 
         void OnTriggerEnter2D(Collider2D other)
         {
             if (collected || other.gameObject.layer != GameLayers.Player) return;
             collected = true;
-            if (score != null) score.AddCoin();
+            if (score != null) score.AddCoin(data != null ? data.points : 0);
             if (collectEffect != null) Instantiate(collectEffect, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }

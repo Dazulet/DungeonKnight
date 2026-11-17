@@ -8,32 +8,13 @@ namespace DungeonKnight
     {
         [SerializeField] EnemyVision vision;
         [SerializeField] AttackTelegraph telegraph;
+        [SerializeField] PatrollerStats stats;
         [SerializeField] GameObject strikeEffect;
-        [SerializeField] Transform[] waypoints;
+        [SerializeField] Vector2[] route;
 
-        [Header("Movement")]
-        [SerializeField, Min(0f)] float patrolSpeed = 1.4f;
-        [SerializeField, Min(0f)] float chaseSpeed = 2.6f;
-        [SerializeField, Min(0f)] float waypointPause = 0.6f;
+        [Header("Navigation")]
         [SerializeField, Min(0.1f)] float stuckCheckInterval = 2.5f;
         [SerializeField, Min(0f)] float stuckDistance = 0.3f;
-
-        [Header("Attack")]
-        [SerializeField, Min(0f)] float attackRange = 1.3f;
-        [SerializeField, Min(0f)] float holdDistance = 0.8f;
-        [SerializeField, Min(0f)] float strikeReach = 0.7f;
-        [SerializeField, Min(0.1f)] float strikeRadius = 0.85f;
-        [SerializeField, Min(1)] int attackDamage = 1;
-        [SerializeField, Range(0.3f, 0.8f)] float windUpDuration = 0.55f;
-        [SerializeField, Min(0f)] float recoveryDuration = 0.45f;
-        [SerializeField, Min(0f)] float attackCooldown = 1.1f;
-
-        [Header("Search")]
-        [SerializeField, Min(0f)] float searchSpeed = 1.8f;
-        [SerializeField, Min(0f)] float lookAroundDuration = 2.2f;
-        [SerializeField, Min(0.05f)] float lookTurnInterval = 0.55f;
-        [SerializeField, Range(0f, 180f)] float lookTurnAngle = 90f;
-        [SerializeField, Min(0f)] float hitInvestigateDistance = 3f;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
 
         int waypointIndex;
@@ -48,10 +29,18 @@ namespace DungeonKnight
         float nextLookTurn;
 
         protected override PatrollerState InitialState => PatrollerState.Patrol;
+        protected override SightedEnemyStats SightStats => stats;
+
+        public override void Configure(PlayerHealth player, EnemySpawn spawn)
+        {
+            base.Configure(player, spawn);
+            route = spawn.patrolRoute != null ? (Vector2[])spawn.patrolRoute.Clone() : new Vector2[0];
+        }
 
         protected override void Awake()
         {
             base.Awake();
+            RefCheck.Valid(this, stats, nameof(stats));
             RefCheck.Valid(this, vision, nameof(vision));
             RefCheck.Valid(this, telegraph, nameof(telegraph));
         }
@@ -82,21 +71,19 @@ namespace DungeonKnight
                 ChangeState(PatrollerState.Chase);
                 return;
             }
-            if (waypoints == null || waypoints.Length == 0 || Time.time < pausedUntil)
+            if (route == null || route.Length == 0 || Time.time < pausedUntil)
             {
                 motor.Stop();
                 return;
             }
 
-            Transform waypoint = waypoints[waypointIndex];
-            bool arrived = waypoint == null || motor.MoveTo(waypoint.position, patrolSpeed);
+            bool arrived = motor.MoveTo(route[waypointIndex], stats.patrolSpeed);
             if (!arrived && !IsStuck()) return;
 
-            waypointIndex = (waypointIndex + 1) % waypoints.Length;
-            pausedUntil = Time.time + waypointPause;
+            waypointIndex = (waypointIndex + 1) % route.Length;
+            pausedUntil = Time.time + stats.waypointPause;
             ResetProgressCheck();
-            Transform next = waypoints[waypointIndex];
-            if (next != null) motor.Face((Vector2)next.position - Position);
+            motor.Face(route[waypointIndex] - Position);
         }
 
         void TickChase()
@@ -110,20 +97,20 @@ namespace DungeonKnight
             lastKnownTargetPosition = TargetPosition;
             Vector2 toTarget = lastKnownTargetPosition - Position;
             float distance = toTarget.magnitude;
-            if (distance <= attackRange && Time.time >= nextAttackTime && CanStartAttack)
+            if (distance <= stats.attackRange && Time.time >= nextAttackTime && CanStartAttack)
             {
                 ChangeState(PatrollerState.WindUp);
                 return;
             }
 
-            if (distance <= holdDistance)
+            if (distance <= stats.holdDistance)
             {
                 motor.Stop();
                 motor.Face(toTarget);
             }
             else
             {
-                motor.Move(toTarget, chaseSpeed);
+                motor.Move(toTarget, stats.chaseSpeed);
             }
         }
 
@@ -135,14 +122,14 @@ namespace DungeonKnight
                 ChangeState(PatrollerState.Patrol);
                 return;
             }
-            telegraph.SetProgress(TimeInState / windUpDuration);
-            if (TimeInState >= windUpDuration) ChangeState(PatrollerState.Recover);
+            telegraph.SetProgress(TimeInState / stats.windUpDuration);
+            if (TimeInState >= stats.windUpDuration) ChangeState(PatrollerState.Recover);
         }
 
         void TickRecover()
         {
             motor.Stop();
-            if (TimeInState < recoveryDuration) return;
+            if (TimeInState < stats.recoveryDuration) return;
             if (CanTrackTarget()) ChangeState(PatrollerState.Chase);
             else ChangeState(HasLivingTarget ? PatrollerState.Search : PatrollerState.Patrol);
         }
@@ -157,7 +144,7 @@ namespace DungeonKnight
 
             if (!lookingAround)
             {
-                bool arrived = motor.MoveTo(lastKnownTargetPosition, searchSpeed);
+                bool arrived = motor.MoveTo(lastKnownTargetPosition, stats.searchSpeed);
                 if (arrived || IsStuck()) StartLookingAround();
                 return;
             }
@@ -165,8 +152,8 @@ namespace DungeonKnight
             motor.Stop();
             if (Time.time >= nextLookTurn)
             {
-                motor.Face(Quaternion.Euler(0f, 0f, lookTurnAngle) * motor.Facing);
-                nextLookTurn = Time.time + lookTurnInterval;
+                motor.Face(Quaternion.Euler(0f, 0f, stats.lookTurnAngle) * motor.Facing);
+                nextLookTurn = Time.time + stats.lookTurnInterval;
             }
             if (Time.time >= lookAroundEnd) ChangeState(PatrollerState.Patrol);
         }
@@ -207,8 +194,8 @@ namespace DungeonKnight
         {
             vision.Alert();
             if (State != PatrollerState.Patrol && State != PatrollerState.Search) return;
-            RaycastHit2D wall = Physics2D.Raycast(Position, towardShooter, hitInvestigateDistance, obstacleMask);
-            float distance = wall.collider != null ? Mathf.Max(0f, wall.distance - 0.5f) : hitInvestigateDistance;
+            RaycastHit2D wall = Physics2D.Raycast(Position, towardShooter, stats.hitInvestigateDistance, obstacleMask);
+            float distance = wall.collider != null ? Mathf.Max(0f, wall.distance - 0.5f) : stats.hitInvestigateDistance;
             lastKnownTargetPosition = Position + towardShooter * distance;
             motor.Face(towardShooter);
             if (State == PatrollerState.Patrol)
@@ -228,26 +215,26 @@ namespace DungeonKnight
             if (direction.sqrMagnitude < 0.0001f) direction = motor.Facing;
             motor.Stop();
             motor.Face(direction);
-            strikeCenter = Position + direction.normalized * strikeReach;
-            telegraph.ShowCircle(strikeCenter, strikeRadius);
+            strikeCenter = Position + direction.normalized * stats.strikeReach;
+            telegraph.ShowCircle(strikeCenter, stats.strikeRadius);
         }
 
         void Strike()
         {
-            nextAttackTime = Time.time + attackCooldown;
+            nextAttackTime = Time.time + stats.attackCooldown;
             telegraph.Flash();
             if (strikeEffect != null) Instantiate(strikeEffect, strikeCenter, Quaternion.identity);
             if (!HasLivingTarget) return;
-            if ((TargetPosition - strikeCenter).sqrMagnitude > strikeRadius * strikeRadius) return;
+            if ((TargetPosition - strikeCenter).sqrMagnitude > stats.strikeRadius * stats.strikeRadius) return;
             if (!vision.HasLineOfSightNow(TargetPosition)) return;
-            target.TakeDamage(attackDamage);
+            target.TakeDamage(stats.attackDamage);
         }
 
         void StartLookingAround()
         {
             lookingAround = true;
-            lookAroundEnd = Time.time + lookAroundDuration;
-            nextLookTurn = Time.time + lookTurnInterval;
+            lookAroundEnd = Time.time + stats.lookAroundDuration;
+            nextLookTurn = Time.time + stats.lookTurnInterval;
         }
 
         bool CanDetectTarget() => HasLivingTarget && vision.CanSee(TargetPosition);
@@ -270,13 +257,12 @@ namespace DungeonKnight
 
         int NearestWaypointIndex()
         {
-            if (waypoints == null || waypoints.Length == 0) return 0;
+            if (route == null || route.Length == 0) return 0;
             int best = 0;
             float bestSqr = float.MaxValue;
-            for (int i = 0; i < waypoints.Length; i++)
+            for (int i = 0; i < route.Length; i++)
             {
-                if (waypoints[i] == null) continue;
-                float sqr = ((Vector2)waypoints[i].position - Position).sqrMagnitude;
+                float sqr = (route[i] - Position).sqrMagnitude;
                 if (sqr < bestSqr)
                 {
                     bestSqr = sqr;
@@ -286,27 +272,21 @@ namespace DungeonKnight
             return best;
         }
 
-        void OnValidate()
-        {
-            holdDistance = Mathf.Min(holdDistance, attackRange);
-        }
 
         void OnDrawGizmosSelected()
         {
-            if (waypoints != null && waypoints.Length > 0)
+            if (route != null && route.Length > 0)
             {
                 Gizmos.color = new Color(0.4f, 0.9f, 1f, 0.9f);
-                for (int i = 0; i < waypoints.Length; i++)
+                for (int i = 0; i < route.Length; i++)
                 {
-                    Transform a = waypoints[i];
-                    Transform b = waypoints[(i + 1) % waypoints.Length];
-                    if (a == null || b == null) continue;
-                    Gizmos.DrawWireSphere(a.position, 0.15f);
-                    Gizmos.DrawLine(a.position, b.position);
+                    Gizmos.DrawWireSphere(route[i], 0.15f);
+                    Gizmos.DrawLine(route[i], route[(i + 1) % route.Length]);
                 }
             }
+            if (stats == null) return;
             Gizmos.color = new Color(1f, 0.3f, 0.2f, 0.9f);
-            Gizmos.DrawWireSphere(transform.position, attackRange);
+            Gizmos.DrawWireSphere(transform.position, stats.attackRange);
         }
     }
 }

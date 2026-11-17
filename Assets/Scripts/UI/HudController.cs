@@ -14,12 +14,17 @@ namespace DungeonKnight
         [SerializeField] Text coinText;
         [SerializeField] LevelGoal goal;
         [SerializeField] Text goalText;
+        [SerializeField] Text timerText;
+        [SerializeField, Min(0)] int timerWarningSeconds = 15;
+        [SerializeField] Color timerWarningColor = new Color(1f, 0.42f, 0.42f);
         [SerializeField, Min(1f)] float popScale = 1.25f;
         [SerializeField, Min(0.01f)] float popTime = 0.18f;
 
         float scorePop;
         float coinPop;
         int shownHearts = -1;
+        int shownSeconds = -1;
+        Color timerColor = Color.white;
 
         void Awake()
         {
@@ -27,6 +32,7 @@ namespace DungeonKnight
             RefCheck.Valid(this, score, nameof(score));
             RefCheck.Valid(this, scoreText, nameof(scoreText));
             RefCheck.Valid(this, coinText, nameof(coinText));
+            if (timerText != null) timerColor = timerText.color;
         }
 
         void OnEnable()
@@ -83,6 +89,7 @@ namespace DungeonKnight
 
         void ShowHearts(int current, int max)
         {
+            EnsureHeartSlots(max);
             if (hearts == null) return;
             for (int i = 0; i < hearts.Length; i++)
             {
@@ -95,8 +102,32 @@ namespace DungeonKnight
             shownHearts = current;
         }
 
+        void EnsureHeartSlots(int count)
+        {
+            if (hearts == null || hearts.Length == 0 || hearts.Length >= count || hearts[0] == null) return;
+            RectTransform first = hearts[0].rectTransform;
+            Vector2 step = hearts.Length > 1 && hearts[1] != null
+                ? hearts[1].rectTransform.anchoredPosition - first.anchoredPosition
+                : new Vector2(first.sizeDelta.x, 0f);
+            var slots = new Image[count];
+            for (int i = 0; i < count; i++)
+            {
+                if (i < hearts.Length)
+                {
+                    slots[i] = hearts[i];
+                    continue;
+                }
+                Image copy = Instantiate(hearts[0], first.parent);
+                copy.name = $"Heart {i + 1}";
+                copy.rectTransform.anchoredPosition = first.anchoredPosition + step * i;
+                slots[i] = copy;
+            }
+            hearts = slots;
+        }
+
         void Update()
         {
+            UpdateTimer();
             float dt = Time.unscaledDeltaTime;
             scorePop = Animate(scoreText, scorePop, dt);
             coinPop = Animate(coinText, coinPop, dt);
@@ -107,6 +138,16 @@ namespace DungeonKnight
                 Transform t = heart.rectTransform;
                 t.localScale = Vector3.MoveTowards(t.localScale, Vector3.one, dt * 2f);
             }
+        }
+
+        void UpdateTimer()
+        {
+            if (goal == null || timerText == null || goal.Level == null) return;
+            int seconds = Mathf.CeilToInt(goal.TimeLeft);
+            if (seconds == shownSeconds) return;
+            shownSeconds = seconds;
+            timerText.text = $"LEVEL {goal.Level.levelNumber}   TIME {seconds / 60}:{seconds % 60:00}";
+            timerText.color = seconds <= timerWarningSeconds ? timerWarningColor : timerColor;
         }
 
         float Animate(Text text, float timeLeft, float dt)

@@ -35,6 +35,7 @@ namespace DungeonKnight
 
         public void Shake(float strength)
         {
+            if (!SaveManager.Settings.screenShake) return;
             magnitude = Mathf.Max(magnitude * (timeLeft / duration), strength);
             timeLeft = duration;
         }

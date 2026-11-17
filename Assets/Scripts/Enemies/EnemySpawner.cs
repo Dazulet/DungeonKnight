@@ -6,51 +6,37 @@ namespace DungeonKnight
     
     public class EnemySpawner : MonoBehaviour
     {
-        [System.Serializable]
-        public struct EnemyType
-        {
-            public GameObject prefab;
-            [Min(0f)] public float weight;
-            [Tooltip("Seconds into the run before this enemy can appear.")]
-            [Min(0f)] public float unlockTime;
-        }
-
+        [SerializeField] EndlessData data;
         [SerializeField] PlayerHealth player;
         [SerializeField] ScoreManager score;
         [SerializeField] Transform[] spawnPoints;
-        [SerializeField] EnemyType[] enemyTypes;
         [SerializeField] GameObject spawnEffect;
-        [SerializeField, Min(0)] int initialCount = 3;
-        [SerializeField, Min(1)] int maxAlive = 8;
-        [SerializeField, Min(0.1f)] float startInterval = 2.5f;
-        [SerializeField, Min(0.1f)] float minInterval = 0.9f;
-        [SerializeField, Min(1f)] float rampDuration = 90f;
-        [SerializeField, Min(0f)] float minPlayerDistance = 4.5f;
         [SerializeField, Min(0.05f)] float clearanceRadius = 0.4f;
-        [SerializeField, Min(0f)] float spawnDelay = 0.35f;
 
         float runTime;
 
         void Awake()
         {
+            RefCheck.Valid(this, data, nameof(data));
             RefCheck.Valid(this, player, nameof(player));
             RefCheck.Valid(this, score, nameof(score));
             if (spawnPoints == null || spawnPoints.Length == 0)
                 Debug.LogError("EnemySpawner has no spawn points.", this);
-            if (enemyTypes == null || enemyTypes.Length == 0)
-                Debug.LogError("EnemySpawner has no enemy types.", this);
+            if (data != null && (data.enemyTypes == null || data.enemyTypes.Length == 0))
+                Debug.LogError("EndlessData has no enemy types.", this);
         }
 
         IEnumerator Start()
         {
-            yield return new WaitForSeconds(0.6f);
-            for (int i = 0; i < initialCount; i++) TrySpawn();
+            if (data == null) yield break;
+            yield return new WaitForSeconds(data.firstSpawnDelay);
+            for (int i = 0; i < data.initialCount; i++) TrySpawn();
             while (true)
             {
-                float t = Mathf.Clamp01(runTime / rampDuration);
-                yield return new WaitForSeconds(Mathf.Lerp(startInterval, minInterval, t));
+                float t = Mathf.Clamp01(runTime / data.rampDuration);
+                yield return new WaitForSeconds(Mathf.Lerp(data.startInterval, data.minInterval, t));
                 if (player == null || !player.IsAlive) yield break;
-                if (EnemyHealth.ActiveCount < maxAlive) TrySpawn();
+                if (EnemyHealth.ActiveCount < data.maxAlive) TrySpawn();
             }
         }
 
@@ -75,7 +61,7 @@ namespace DungeonKnight
 
         bool IsSafe(Vector2 position)
         {
-            if (Vector2.Distance(position, player.transform.position) < minPlayerDistance) return false;
+            if (Vector2.Distance(position, player.transform.position) < data.minPlayerDistance) return false;
             int blockers = GameLayers.Mask(GameLayers.Obstacle);
             return Physics2D.OverlapCircle(position, clearanceRadius, blockers) == null;
         }
@@ -83,7 +69,7 @@ namespace DungeonKnight
         IEnumerator SpawnAt(GameObject prefab, Vector2 position)
         {
             if (spawnEffect != null) Instantiate(spawnEffect, position, Quaternion.identity);
-            yield return new WaitForSeconds(spawnDelay);
+            yield return new WaitForSeconds(data.spawnDelay);
             if (player == null || !player.IsAlive) yield break;
 
             GameObject enemy = Instantiate(prefab, position, Quaternion.identity);
@@ -93,13 +79,14 @@ namespace DungeonKnight
 
         GameObject PickPrefab()
         {
+            if (data == null || data.enemyTypes == null) return null;
             float total = 0f;
-            foreach (EnemyType type in enemyTypes)
+            foreach (EndlessData.EnemyType type in data.enemyTypes)
                 if (type.prefab != null && runTime >= type.unlockTime) total += type.weight;
             if (total <= 0f) return null;
 
             float roll = Random.value * total;
-            foreach (EnemyType type in enemyTypes)
+            foreach (EndlessData.EnemyType type in data.enemyTypes)
             {
                 if (type.prefab == null || runTime < type.unlockTime) continue;
                 roll -= type.weight;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DungeonKnight
 {
-    public abstract class EnemyBrain<TState> : MonoBehaviour where TState : struct, Enum
+    public abstract class EnemyBrain<TState> : MonoBehaviour, ILevelEnemy where TState : struct, Enum
     {
         [SerializeField] protected PlayerHealth target;
         [SerializeField] protected EnemyHealth health;
@@ -12,8 +12,6 @@ namespace DungeonKnight
         [SerializeField] HitFlash hitFlash;
         [SerializeField] EnemyStateLabel stateLabel;
         [SerializeField] Color windUpTint = new Color(1f, 0.55f, 0.45f, 1f);
-        [SerializeField, Range(0f, 0.25f)] float attackScreenMargin = 0.03f;
-        [SerializeField, Min(0f)] float attackGracePeriod = 1.5f;
         [SerializeField] bool logStateChanges;
         [SerializeField] string debugState;
 
@@ -23,6 +21,7 @@ namespace DungeonKnight
         Vector2 pendingHitDirection;
 
         protected abstract TState InitialState { get; }
+        protected abstract SightedEnemyStats SightStats { get; }
 
         public TState State => machine != null ? machine.Current : InitialState;
         protected float TimeInState => machine != null ? machine.TimeInState : 0f;
@@ -31,18 +30,19 @@ namespace DungeonKnight
         protected Vector2 Position => motor.Position;
         protected Vector2 TargetPosition => target.transform.position;
 
-        protected bool CanStartAttack => HasLivingTarget && Time.timeSinceLevelLoad >= attackGracePeriod
+        protected bool CanStartAttack => HasLivingTarget && Time.timeSinceLevelLoad >= SightStats.attackGracePeriod
             && IsOnScreen(Position) && IsOnScreen(TargetPosition);
 
-        public void Init(PlayerHealth player) => target = player;
+        public virtual void Configure(PlayerHealth player, EnemySpawn spawn) => target = player;
 
         protected bool IsOnScreen(Vector2 point)
         {
             if (viewCamera == null) viewCamera = Camera.main;
             if (viewCamera == null) return true;
             Vector3 viewport = viewCamera.WorldToViewportPoint(point);
-            return viewport.x >= attackScreenMargin && viewport.x <= 1f - attackScreenMargin
-                && viewport.y >= attackScreenMargin && viewport.y <= 1f - attackScreenMargin;
+            float margin = SightStats.attackScreenMargin;
+            return viewport.x >= margin && viewport.x <= 1f - margin
+                && viewport.y >= margin && viewport.y <= 1f - margin;
         }
 
         protected virtual void Awake()
@@ -66,7 +66,7 @@ namespace DungeonKnight
 
         void Update()
         {
-            if (motor == null) return;
+            if (motor == null || SightStats == null) return;
             if (!IsAlive)
             {
                 motor.Stop();

@@ -72,11 +72,15 @@ namespace DungeonKnight.EditorTools
             GameObject gameOverOverlay = BuildGameOverOverlay(canvas.transform, out Text result, out Button retry, out Button gameOverMenu);
 
             Text goalText = null;
+            Text timerText = null;
             if (goal != null)
             {
                 goalText = UiFactory.Text(safe, "Goal", "TRY 1   ENEMIES 0", 44, UiFactory.TopRight, new Vector2(-200f, -60f),
                     new Vector2(620f, 80f), TextAnchor.MiddleRight);
-                GameObject victoryOverlay = BuildVictoryOverlay(canvas.transform, out Text victoryResult, out Button again, out Button victoryMenu);
+                timerText = UiFactory.Text(safe, "Timer", "LEVEL 1   TIME 0:00", 44, UiFactory.TopRight, new Vector2(-200f, -130f),
+                    new Vector2(620f, 70f), TextAnchor.MiddleRight);
+                GameObject victoryOverlay = BuildVictoryOverlay(canvas.transform, out Text victoryResult, out Button next,
+                    out Button again, out Button victoryMenu);
                 var victory = canvas.gameObject.AddComponent<GameOverPanel>();
                 BuilderUtil.Set(victory, "game", game);
                 BuilderUtil.Set(victory, "score", score);
@@ -85,6 +89,7 @@ namespace DungeonKnight.EditorTools
                 BuilderUtil.Set(victory, "panel", victoryOverlay);
                 BuilderUtil.Set(victory, "resultText", victoryResult);
                 BuilderUtil.Set(victory, "retryButton", again);
+                BuilderUtil.Set(victory, "nextButton", next);
                 BuilderUtil.Set(victory, "menuButton", victoryMenu);
             }
 
@@ -98,6 +103,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(hud, "coinText", coinText);
             BuilderUtil.Set(hud, "goal", goal);
             BuilderUtil.Set(hud, "goalText", goalText);
+            BuilderUtil.Set(hud, "timerText", timerText);
 
             var pause = canvas.gameObject.AddComponent<PauseManager>();
             BuilderUtil.Set(pause, "game", game);
@@ -142,14 +148,16 @@ namespace DungeonKnight.EditorTools
             return overlay;
         }
 
-        static GameObject BuildVictoryOverlay(Transform canvas, out Text result, out Button again, out Button menu)
+        static GameObject BuildVictoryOverlay(Transform canvas, out Text result, out Button next, out Button again, out Button menu)
         {
             RectTransform panel = Overlay(canvas, "Victory Overlay", new Color(0.02f, 0.12f, 0.08f, 0.8f), "VICTORY", UiFactory.Gold);
-            result = UiFactory.Text(panel, "Result", "DUNGEON CLEARED", 56, UiFactory.Center, new Vector2(0f, 110f),
-                new Vector2(740f, 180f));
+            result = UiFactory.Text(panel, "Result", "DUNGEON CLEARED", 56, UiFactory.Center, new Vector2(0f, 130f),
+                new Vector2(740f, 160f));
             result.lineSpacing = 1.3f;
-            again = UiFactory.Button(panel, "Play Again Button", "PLAY AGAIN", UiFactory.Center, new Vector2(0f, -90f), MenuButtonSize);
-            menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -260f), MenuButtonSize);
+            var size = new Vector2(MenuButtonSize.x, 110f);
+            next = UiFactory.Button(panel, "Next Level Button", "NEXT LEVEL", UiFactory.Center, new Vector2(0f, -20f), size);
+            again = UiFactory.Button(panel, "Play Again Button", "PLAY AGAIN", UiFactory.Center, new Vector2(0f, -150f), size);
+            menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -280f), size);
             GameObject overlay = panel.parent.gameObject;
             overlay.SetActive(false);
             return overlay;

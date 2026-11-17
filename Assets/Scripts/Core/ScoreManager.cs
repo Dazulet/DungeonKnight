@@ -5,8 +5,6 @@ namespace DungeonKnight
 {
     public class ScoreManager : MonoBehaviour
     {
-        [SerializeField, Min(0)] int pointsPerCoin = 10;
-
         public int Score { get; private set; }
         public int Coins { get; private set; }
 
@@ -20,11 +18,11 @@ namespace DungeonKnight
             ScoreChanged?.Invoke(Score);
         }
 
-        public void AddCoin()
+        public void AddCoin(int points)
         {
             Coins++;
             CoinsChanged?.Invoke(Coins);
-            AddScore(pointsPerCoin);
+            AddScore(points);
         }
     }
 }

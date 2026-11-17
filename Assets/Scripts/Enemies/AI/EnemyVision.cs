@@ -5,15 +5,12 @@ namespace DungeonKnight
     public class EnemyVision : MonoBehaviour
     {
         [SerializeField] EnemyMotor motor;
-        [SerializeField, Min(0f)] float viewDistance = 5.5f;
-        [SerializeField, Range(1f, 360f)] float fieldOfView = 110f;
+        [SerializeField] SightedEnemyStats stats;
         [SerializeField] Vector2 eyeOffset = Vector2.zero;
         [SerializeField] LayerMask obstacleMask = 1 << GameLayers.Obstacle;
         [SerializeField, Range(0f, 0.3f)] float senseInterval = 0.1f;
         [SerializeField, Min(0f)] float senseCacheDistance = 0.1f;
         [SerializeField] bool drawSightRay = true;
-        [SerializeField, Min(1f)] float alertRangeMultiplier = 1.6f;
-        [SerializeField, Min(0f)] float alertDuration = 3f;
 
         float alertUntil = float.NegativeInfinity;
 
@@ -22,17 +19,24 @@ namespace DungeonKnight
         bool cachedLineOfSight;
         float nextSenseTime = float.NegativeInfinity;
 
-        public float ViewDistance => viewDistance;
-        public float FieldOfView => fieldOfView;
+        public float ViewDistance => stats != null ? stats.viewDistance : 0f;
+        public float FieldOfView => stats != null ? stats.fieldOfView : 0f;
         public bool IsAlerted => Time.time < alertUntil;
-        float CurrentViewDistance => IsAlerted ? viewDistance * alertRangeMultiplier : viewDistance;
+        float CurrentViewDistance => IsAlerted ? ViewDistance * stats.alertRangeMultiplier : ViewDistance;
 
-        public void Alert() => alertUntil = Time.time + alertDuration;
+        public void Alert()
+        {
+            if (stats != null) alertUntil = Time.time + stats.alertDuration;
+        }
 
         Vector2 Eye => (Vector2)transform.position + eyeOffset;
         Vector2 Facing => motor != null ? motor.Facing : Vector2.right;
 
-        void Awake() => RefCheck.Valid(this, motor, nameof(motor));
+        void Awake()
+        {
+            RefCheck.Valid(this, motor, nameof(motor));
+            RefCheck.Valid(this, stats, nameof(stats));
+        }
 
         public bool CanSee(Vector2 point) => IsInRange(point) && IsInFieldOfView(point) && HasLineOfSight(point);
 
@@ -42,7 +46,7 @@ namespace DungeonKnight
         {
             Vector2 toPoint = point - Eye;
             if (toPoint.sqrMagnitude < 0.0001f) return true;
-            return Vector2.Angle(Facing, toPoint) <= fieldOfView * 0.5f;
+            return Vector2.Angle(Facing, toPoint) <= FieldOfView * 0.5f;
         }
 
         public bool HasLineOfSight(Vector2 point)
@@ -72,9 +76,11 @@ namespace DungeonKnight
 
         void OnDrawGizmosSelected()
         {
+            if (stats == null) return;
             Vector3 eye = Eye;
             Vector2 facing = Application.isPlaying ? Facing : Vector2.right;
-            float half = fieldOfView * 0.5f;
+            float viewDistance = stats.viewDistance;
+            float half = stats.fieldOfView * 0.5f;
             const int segments = 24;
             Gizmos.color = new Color(1f, 0.85f, 0.2f, 0.8f);
             Vector3 previous = eye + (Vector3)(Rotate(facing, -half) * viewDistance);

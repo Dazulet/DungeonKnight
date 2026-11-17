@@ -257,9 +257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55d2bb976e6a5194380dbf235445aded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyHealth
-  maxHealth: 2
-  scoreValue: 150
-  coinDropChance: 0.3
+  stats: {fileID: 11400000, guid: 4d9d48472812814488904ca749fcd1b8, type: 2}
   hitFlash: {fileID: 5063429829307251516}
   deathEffect: {fileID: 2812100078477985753, guid: 076f047b08dca37419fe46ef46d33ffe, type: 3}
   coinPrefab: {fileID: 6370443523478918334, guid: 4b09c72778f212d4f900cb846a35aae1, type: 3}
@@ -277,12 +275,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82707694600432f4ea24d5310c3a13eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyController
-  moveSpeed: 3
-  acceleration: 12
-  contactRange: 0.7
-  attackCooldown: 0.9
-  contactDamage: 1
-  wobble: 1.2
+  stats: {fileID: 11400000, guid: 4d9d48472812814488904ca749fcd1b8, type: 2}
   body: {fileID: 5392236847324214490}
 --- !u!1 &8924177740898682664
 GameObject:

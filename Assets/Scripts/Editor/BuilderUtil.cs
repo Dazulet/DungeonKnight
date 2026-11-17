@@ -10,6 +10,7 @@ namespace DungeonKnight.EditorTools
         public const string ArtRoot = "Assets/Art";
         public const string PrefabRoot = "Assets/Prefabs";
         public const string SceneRoot = "Assets/Scenes";
+        public const string DataRoot = "Assets/Data";
         public const string FontPath = "Assets/Fonts/PixelFont.ttf";
 
         public static Sprite Sprite(string path)
@@ -25,6 +26,14 @@ namespace DungeonKnight.EditorTools
             var frames = new Sprite[count];
             for (int i = 0; i < count; i++) frames[i] = Sprite($"{pathPrefix}_{i}");
             return frames;
+        }
+
+        public static T Data<T>(string path) where T : ScriptableObject
+        {
+            string full = $"{DataRoot}/{path}.asset";
+            var asset = AssetDatabase.LoadAssetAtPath<T>(full);
+            if (asset == null) Debug.LogError($"Data asset not found at {full}. Data assets are part of the repository; restore them from Git.");
+            return asset;
         }
 
         public static Font PixelFont()

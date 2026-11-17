@@ -83,10 +83,15 @@ namespace DungeonKnight.EditorTools
             LevelGoal goal = null;
             if (withEncounter)
             {
-                List<EnemyHealth> enemies = EnemyEncounterBuilder.Build(player, score);
                 goal = game.AddComponent<LevelGoal>();
                 BuilderUtil.Set(goal, "game", gameManager);
-                BuilderUtil.Set(goal, "enemies", enemies);
+                BuilderUtil.Set(goal, "score", score);
+                var loader = game.AddComponent<LevelLoader>();
+                BuilderUtil.Set(loader, "goal", goal);
+                BuilderUtil.Set(loader, "player", player);
+                BuilderUtil.Set(loader, "score", score);
+                BuilderUtil.Set(loader, "enemyRoot", new GameObject("Enemies").transform);
+                BuilderUtil.Set(loader, "spawnEffect", BuilderUtil.LoadPrefab("SpawnMarker"));
             }
             else
             {
@@ -232,24 +237,11 @@ namespace DungeonKnight.EditorTools
         {
             var go = new GameObject("Enemy Spawner");
             var spawner = go.AddComponent<EnemySpawner>();
+            BuilderUtil.Set(spawner, "data", BuilderUtil.Data<EndlessData>("Endless/EndlessData"));
             BuilderUtil.Set(spawner, "player", player);
             BuilderUtil.Set(spawner, "score", score);
             BuilderUtil.Set(spawner, "spawnPoints", spawnPoints);
             BuilderUtil.Set(spawner, "spawnEffect", BuilderUtil.LoadPrefab("SpawnMarker"));
-
-            var so = new SerializedObject(spawner);
-            SerializedProperty types = so.FindProperty("enemyTypes");
-            types.arraySize = 2;
-            SetEnemyType(types.GetArrayElementAtIndex(0), BuilderUtil.LoadPrefab("Slime"), weight: 3f, unlockTime: 0f);
-            SetEnemyType(types.GetArrayElementAtIndex(1), BuilderUtil.LoadPrefab("Bat"), weight: 2f, unlockTime: 20f);
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
-
-        static void SetEnemyType(SerializedProperty element, GameObject prefab, float weight, float unlockTime)
-        {
-            element.FindPropertyRelative("prefab").objectReferenceValue = prefab;
-            element.FindPropertyRelative("weight").floatValue = weight;
-            element.FindPropertyRelative("unlockTime").floatValue = unlockTime;
         }
     }
 }

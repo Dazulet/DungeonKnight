@@ -7,9 +7,7 @@ namespace DungeonKnight
     {
         static readonly List<EnemyHealth> active = new List<EnemyHealth>();
 
-        [SerializeField, Min(1)] int maxHealth = 3;
-        [SerializeField, Min(0)] int scoreValue = 100;
-        [SerializeField, Range(0f, 1f)] float coinDropChance = 0.4f;
+        [SerializeField] EnemyStats stats;
         [SerializeField] HitFlash hitFlash;
         [SerializeField] GameObject deathEffect;
         [SerializeField] CoinPickup coinPrefab;
@@ -18,6 +16,7 @@ namespace DungeonKnight
 
         Rigidbody2D rb;
 
+        public EnemyStats Stats => stats;
         public int Health { get; private set; }
         public bool IsAlive => Health > 0;
         public static int ActiveCount => active.Count;
@@ -28,7 +27,7 @@ namespace DungeonKnight
         void Awake()
         {
             rb = GetComponent<Rigidbody2D>();
-            Health = maxHealth;
+            Health = RefCheck.Valid(this, stats, nameof(stats)) ? stats.maxHealth : 1;
         }
 
         void OnEnable() => active.Add(this);
@@ -52,10 +51,10 @@ namespace DungeonKnight
 
         void Die()
         {
+            if (score != null && stats != null) score.AddScore(stats.scoreValue);
             Died?.Invoke(this);
-            if (score != null) score.AddScore(scoreValue);
             if (deathEffect != null) Instantiate(deathEffect, transform.position, Quaternion.identity);
-            if (coinPrefab != null && Random.value < coinDropChance)
+            if (coinPrefab != null && stats != null && Random.value < stats.coinDropChance)
             {
                 CoinPickup coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);
                 coin.Init(score, player);

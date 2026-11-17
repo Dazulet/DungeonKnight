@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52d232b7b176f5b48b6b7ba41193fc4e, type: 3}
+  m_Name: SlimeStats
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.ChaserStats
+  maxHealth: 3
+  scoreValue: 100
+  coinDropChance: 0.45
+  moveSpeed: 1.7
+  acceleration: 12
+  wobble: 0
+  contactRange: 0.7
+  contactDamage: 1
+  attackCooldown: 0.9
+  firstAttackDelay: 0.5

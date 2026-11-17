@@ -529,9 +529,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55d2bb976e6a5194380dbf235445aded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyHealth
-  maxHealth: 3
-  scoreValue: 250
-  coinDropChance: 0.6
+  stats: {fileID: 11400000, guid: 179f7908d5593a941a55a80ecf8b1f9d, type: 2}
   hitFlash: {fileID: 4149789598677463972}
   deathEffect: {fileID: 2812100078477985753, guid: 076f047b08dca37419fe46ef46d33ffe, type: 3}
   coinPrefab: {fileID: 6370443523478918334, guid: 4b09c72778f212d4f900cb846a35aae1, type: 3}
@@ -571,8 +569,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyVision
   motor: {fileID: 8114145231822633853}
-  viewDistance: 7.5
-  fieldOfView: 120
+  stats: {fileID: 11400000, guid: 179f7908d5593a941a55a80ecf8b1f9d, type: 2}
   eyeOffset: {x: 0, y: 0}
   obstacleMask:
     serializedVersion: 2
@@ -580,8 +577,6 @@ MonoBehaviour:
   senseInterval: 0.1
   senseCacheDistance: 0.1
   drawSightRay: 1
-  alertRangeMultiplier: 1.6
-  alertDuration: 3
 --- !u!114 &5032744193819201977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -601,41 +596,17 @@ MonoBehaviour:
   hitFlash: {fileID: 4149789598677463972}
   stateLabel: {fileID: 8860168514501376292}
   windUpTint: {r: 1, g: 0.55, b: 0.45, a: 1}
-  attackScreenMargin: 0.03
-  attackGracePeriod: 1.5
   logStateChanges: 0
   debugState: 
   vision: {fileID: 1836696738929669184}
   telegraph: {fileID: 1777606867052990317}
+  stats: {fileID: 11400000, guid: 179f7908d5593a941a55a80ecf8b1f9d, type: 2}
   boltPrefab: {fileID: 8618960071857345437, guid: 5f805fc206458fc4f8c3858a83501a04, type: 3}
   muzzleOffset: {x: 0, y: 0}
   postFacing: {x: 1, y: 0}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4096
-  returnSpeed: 1.5
-  watchSweepAngle: 40
-  watchSweepPeriod: 3.2
-  minDistance: 2.5
-  maxDistance: 7
-  retreatSpeed: 1.7
-  approachSpeed: 1.8
-  sidestepSpeed: 1.6
-  minShootDistance: 2
-  maxRetreatTime: 1.2
-  aimDuration: 0.7
-  lockBeforeFire: 0.25
-  aimLeadFactor: 0.6
-  recoveryDuration: 0.4
-  shotCooldown: 1.4
-  firstShotDelay: 0.4
-  projectileSpeed: 6.5
-  projectileRange: 9
-  attackDamage: 1
-  searchDuration: 2.5
-  searchSweepAngle: 60
-  searchSweepPeriod: 1.6
-  hitAlertDistance: 4
 --- !u!1 &6116578671844093122
 GameObject:
   m_ObjectHideFlags: 0

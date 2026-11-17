@@ -284,8 +284,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59074178e6fa7ee4ab2744c2d6736df0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.Projectile
-  speed: 11
-  damage: 1
-  lifetime: 1.6
-  knockback: 3
   hitEffect: {fileID: 6460539499944519896, guid: 5c1cf8b2bc8a64a40a0f41cf42e4ce45, type: 3}

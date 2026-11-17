@@ -710,9 +710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55d2bb976e6a5194380dbf235445aded, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyHealth
-  maxHealth: 7
-  scoreValue: 300
-  coinDropChance: 0.7
+  stats: {fileID: 11400000, guid: 67b1f802dc4a86e478f6e85ca3257251, type: 2}
   hitFlash: {fileID: 2460647037289391639}
   deathEffect: {fileID: 2812100078477985753, guid: 076f047b08dca37419fe46ef46d33ffe, type: 3}
   coinPrefab: {fileID: 6370443523478918334, guid: 4b09c72778f212d4f900cb846a35aae1, type: 3}
@@ -752,8 +750,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonKnight.EnemyVision
   motor: {fileID: 2566510717814618460}
-  viewDistance: 6
-  fieldOfView: 100
+  stats: {fileID: 11400000, guid: 67b1f802dc4a86e478f6e85ca3257251, type: 2}
   eyeOffset: {x: 0, y: 0}
   obstacleMask:
     serializedVersion: 2
@@ -761,8 +758,6 @@ MonoBehaviour:
   senseInterval: 0.1
   senseCacheDistance: 0.1
   drawSightRay: 1
-  alertRangeMultiplier: 1.6
-  alertDuration: 3
 --- !u!114 &3204648199191737860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -782,43 +777,26 @@ MonoBehaviour:
   hitFlash: {fileID: 2460647037289391639}
   stateLabel: {fileID: 8614505913951538014}
   windUpTint: {r: 1, g: 0.55, b: 0.45, a: 1}
-  attackScreenMargin: 0.03
-  attackGracePeriod: 1.5
   logStateChanges: 0
   debugState: 
   vision: {fileID: 4457857117560967102}
   telegraph: {fileID: 6356127723912731194}
+  stats: {fileID: 11400000, guid: 67b1f802dc4a86e478f6e85ca3257251, type: 2}
   body: {fileID: 2889492466572261879}
   homeFacing: {x: 0, y: -1}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4096
-  prowlSpeed: 1.2
-  prowlRadius: 2.2
-  prowlPause: 1
   prowlPointAttempts: 8
   prowlClearance: 0.1
   stuckCheckInterval: 2
   stuckDistance: 0.3
-  trackSpeed: 1.5
-  chargeTriggerRange: 5
-  stalkDistance: 4
-  windUpDuration: 0.65
   windUpShake: 0.05
-  chargeSpeed: 11
-  chargeDistance: 6.5
   chargeTimeMargin: 0.25
   laneWidth: 0.9
-  hitRadius: 0.6
-  attackDamage: 1
   wallCheckDistance: 0.25
   wallCheckRadiusScale: 0.9
-  recoveryDuration: 0.8
-  wallStunDuration: 1
-  chargeCooldown: 2
   stunnedTint: {r: 0.6, g: 0.65, b: 1, a: 1}
-  hitAlertLookDuration: 1.2
-  prowlTurnStep: 135
 --- !u!1 &7599193347291011780
 GameObject:
   m_ObjectHideFlags: 0

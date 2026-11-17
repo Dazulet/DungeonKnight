@@ -14,6 +14,9 @@ namespace DungeonKnight
 
         bool playerDead;
         bool levelComplete;
+        bool levelFailed;
+
+        bool IsOver => playerDead || levelComplete || levelFailed;
 
         public GameState State { get; private set; } = GameState.Playing;
         public event Action<GameState> StateChanged;
@@ -41,7 +44,7 @@ namespace DungeonKnight
 
         public void SetPaused(bool paused)
         {
-            if (playerDead || levelComplete || State == GameState.GameOver) return;
+            if (IsOver || State == GameState.GameOver) return;
             GameState target = paused ? GameState.Paused : GameState.Playing;
             if (target == State) return;
             State = target;
@@ -62,7 +65,7 @@ namespace DungeonKnight
 
         public bool CompleteLevel()
         {
-            if (playerDead || levelComplete) return false;
+            if (IsOver) return false;
             levelComplete = true;
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(VictoryAfterDelay());
@@ -75,9 +78,18 @@ namespace DungeonKnight
             SetPausedUnchecked(GameState.Victory);
         }
 
+        public bool FailLevel()
+        {
+            if (IsOver) return false;
+            levelFailed = true;
+            if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
+            StartCoroutine(GameOverAfterDelay());
+            return true;
+        }
+
         void OnPlayerDied()
         {
-            if (playerDead || levelComplete) return;
+            if (IsOver) return;
             playerDead = true;
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(GameOverAfterDelay());
