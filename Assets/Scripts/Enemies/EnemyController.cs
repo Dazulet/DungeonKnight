@@ -63,7 +63,11 @@ namespace DungeonKnight
 
             if (Time.time >= nextAttackTime && toPlayer.sqrMagnitude <= stats.contactRange * stats.contactRange)
             {
-                if (target.TakeDamage(stats.contactDamage)) nextAttackTime = Time.time + stats.attackCooldown;
+                if (target.TakeDamage(stats.contactDamage))
+                {
+                    nextAttackTime = Time.time + stats.attackCooldown;
+                    GameAudio.PlayAt(SoundId.ChaserBite, transform.position);
+                }
             }
         }
     }

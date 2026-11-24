@@ -19,6 +19,7 @@ namespace DungeonKnight
         Camera viewCamera;
         bool hitPending;
         Vector2 pendingHitDirection;
+        SoundHandle warningSound;
 
         protected abstract TState InitialState { get; }
         protected abstract SightedEnemyStats SightStats { get; }
@@ -62,6 +63,25 @@ namespace DungeonKnight
         protected virtual void OnDisable()
         {
             if (health != null) health.Damaged -= OnDamaged;
+            StopWarningSound();
+        }
+
+        protected void PlayWarningSound(SoundId id)
+        {
+            GameAudio.Stop(warningSound);
+            warningSound = GameAudio.PlayAt(id, Position);
+        }
+
+        protected void StopWarningSound()
+        {
+            GameAudio.Stop(warningSound);
+            warningSound = default;
+        }
+
+        protected void PlayAttackSound(SoundId id, Vector2 at)
+        {
+            StopWarningSound();
+            GameAudio.PlayAt(id, at);
         }
 
         void Update()

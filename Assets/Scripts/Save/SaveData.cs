@@ -14,10 +14,31 @@ namespace DungeonKnight
     [Serializable]
     public class GameSettings
     {
+        public const float DefaultMusicVolume = 0.8f;
+        public const float DefaultSfxVolume = 0.8f;
+
         public bool screenShake = true;
         public bool autoAim = true;
         public bool effectsOff;
         public bool showFps;
+        public float musicVolume = DefaultMusicVolume;
+        public float sfxVolume = DefaultSfxVolume;
+
+        public bool ValidateVolumes()
+        {
+            float music = CleanVolume(musicVolume, DefaultMusicVolume);
+            float sfx = CleanVolume(sfxVolume, DefaultSfxVolume);
+            bool changed = music != musicVolume || sfx != sfxVolume;
+            musicVolume = music;
+            sfxVolume = sfx;
+            return changed;
+        }
+
+        static float CleanVolume(float value, float fallback)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value)) return fallback;
+            return Math.Max(0f, Math.Min(1f, value));
+        }
     }
 
     [Serializable]
@@ -74,6 +95,7 @@ namespace DungeonKnight
             if (completedLevels == null) { completedLevels = new List<int>(); changed = true; }
             if (bestScores == null) { bestScores = new List<LevelRecord>(); changed = true; }
             if (settings == null) { settings = new GameSettings(); changed = true; }
+            changed |= settings.ValidateVolumes();
 
             changed |= KeepLevelsInRange(completedLevels, lastLevel);
             changed |= KeepLevelsInRange(unlockedLevels, lastLevel);

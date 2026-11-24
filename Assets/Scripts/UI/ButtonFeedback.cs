@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace DungeonKnight
 {
@@ -10,6 +11,14 @@ namespace DungeonKnight
         [SerializeField, Min(1f)] float speed = 25f;
 
         float target = 1f;
+
+        void Awake()
+        {
+            var button = GetComponent<Button>();
+            if (button != null) button.onClick.AddListener(PlayClick);
+        }
+
+        static void PlayClick() => GameAudio.Play(SoundId.UiClick);
 
         void OnDisable()
         {

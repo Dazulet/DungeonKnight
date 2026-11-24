@@ -53,6 +53,7 @@ namespace DungeonKnight
                 return;
             }
             JuiceFx.Spawn(hitParticles, transform.position);
+            GameAudio.PlayAt(SoundId.EnemyHit, transform.position);
             Damaged?.Invoke(push);
         }
 
@@ -62,6 +63,7 @@ namespace DungeonKnight
             Died?.Invoke(this);
             if (deathEffect != null) Instantiate(deathEffect, transform.position, Quaternion.identity);
             JuiceFx.Spawn(deathParticles, transform.position);
+            GameAudio.PlayAt(SoundId.EnemyDeath, transform.position);
             CameraShake.Impact();
             HitStop.Trigger();
             if (coinPrefab != null && stats != null && Random.value < stats.coinDropChance)

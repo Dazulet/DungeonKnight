@@ -42,6 +42,7 @@ namespace DungeonKnight
             direction = Quaternion.Euler(0f, 0f, Random.Range(-stats.spreadDegrees, stats.spreadDegrees)) * direction.normalized;
 
             controller.FaceTowards(direction);
+            GameAudio.Play(SoundId.PlayerShoot);
             Projectile bolt = Instantiate(projectilePrefab, origin, Quaternion.identity);
             bolt.Launch(direction, stats.boltSpeed, stats.boltDamage, stats.boltLifetime, stats.boltKnockback);
         }

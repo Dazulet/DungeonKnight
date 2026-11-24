@@ -163,7 +163,11 @@ namespace DungeonKnight
             if (previous == PatrollerState.WindUp)
             {
                 ClearBodyTint();
-                if (next != PatrollerState.Recover) telegraph.Hide();
+                if (next != PatrollerState.Recover)
+                {
+                    telegraph.Hide();
+                    StopWarningSound();
+                }
             }
             if (next == PatrollerState.Chase && (previous == PatrollerState.Patrol || previous == PatrollerState.Search)) IconAlert();
             if (previous == PatrollerState.Search && next == PatrollerState.Patrol) IconClear();
@@ -217,12 +221,14 @@ namespace DungeonKnight
             motor.Face(direction);
             strikeCenter = Position + direction.normalized * stats.strikeReach;
             telegraph.ShowCircle(strikeCenter, stats.strikeRadius);
+            PlayWarningSound(SoundId.PatrollerWindUp);
         }
 
         void Strike()
         {
             nextAttackTime = Time.time + stats.attackCooldown;
             telegraph.Flash();
+            PlayAttackSound(SoundId.PatrollerSlam, strikeCenter);
             if (strikeEffect != null) Instantiate(strikeEffect, strikeCenter, Quaternion.identity);
             if (!HasLivingTarget) return;
             if ((TargetPosition - strikeCenter).sqrMagnitude > stats.strikeRadius * stats.strikeRadius) return;

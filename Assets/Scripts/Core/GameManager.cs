@@ -67,6 +67,7 @@ namespace DungeonKnight
         {
             if (IsOver) return false;
             levelComplete = true;
+            GameAudio.Play(SoundId.Victory);
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(VictoryAfterDelay());
             return true;
@@ -82,6 +83,7 @@ namespace DungeonKnight
         {
             if (IsOver) return false;
             levelFailed = true;
+            GameAudio.Play(SoundId.Defeat);
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(GameOverAfterDelay());
             return true;
@@ -91,6 +93,7 @@ namespace DungeonKnight
         {
             if (IsOver) return;
             playerDead = true;
+            GameAudio.Play(SoundId.Defeat);
             if (State == GameState.Paused) SetPausedUnchecked(GameState.Playing);
             StartCoroutine(GameOverAfterDelay());
         }

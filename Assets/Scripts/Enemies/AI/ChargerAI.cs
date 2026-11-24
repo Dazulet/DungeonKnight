@@ -187,7 +187,11 @@ namespace DungeonKnight
             {
                 ClearBodyTint();
                 body.transform.localPosition = baseBodyPosition;
-                if (next != ChargerState.Charge) telegraph.Hide();
+                if (next != ChargerState.Charge)
+                {
+                    telegraph.Hide();
+                    StopWarningSound();
+                }
             }
             if (previous == ChargerState.Recover) ClearBodyTint();
             if (previous == ChargerState.Prowl && next == ChargerState.Track) IconAlert();
@@ -218,6 +222,7 @@ namespace DungeonKnight
             chargeDirection = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : motor.Facing;
             motor.Face(chargeDirection);
             telegraph.ShowLane(BodyCenter, chargeDirection, LaneLength(chargeDirection), laneWidth);
+            PlayWarningSound(SoundId.ChargerWindUp);
         }
 
         void BeginCharge()
@@ -227,6 +232,7 @@ namespace DungeonKnight
             hitThisCharge = false;
             hitWall = false;
             telegraph.Flash();
+            PlayAttackSound(SoundId.ChargerDash, Position);
             motor.Dash(chargeDirection, stats.chargeSpeed);
         }
 

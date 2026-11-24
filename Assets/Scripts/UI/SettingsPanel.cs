@@ -7,6 +7,11 @@ namespace DungeonKnight
     public class SettingsPanel : MonoBehaviour
     {
         [SerializeField] GameObject panel;
+        [SerializeField] Slider musicSlider;
+        [SerializeField] Text musicLabel;
+        [SerializeField] Slider sfxSlider;
+        [SerializeField] Text sfxLabel;
+        [SerializeField, Min(0f)] float sfxPreviewInterval = 0.15f;
         [SerializeField] Button screenShakeButton;
         [SerializeField] Text screenShakeLabel;
         [SerializeField] Button autoAimButton;
@@ -22,10 +27,15 @@ namespace DungeonKnight
         public bool IsConfirming => confirmPanel != null && confirmPanel.activeSelf;
         public event System.Action Closed;
 
+        bool volumeDirty;
+        float nextPreview;
+
         void Awake()
         {
             RefCheck.Valid(this, panel, nameof(panel));
             RefCheck.Valid(this, confirmPanel, nameof(confirmPanel));
+            if (musicSlider != null) musicSlider.onValueChanged.AddListener(OnMusicChanged);
+            if (sfxSlider != null) sfxSlider.onValueChanged.AddListener(OnSfxChanged);
             if (screenShakeButton != null) screenShakeButton.onClick.AddListener(ToggleScreenShake);
             if (autoAimButton != null) autoAimButton.onClick.AddListener(ToggleAutoAim);
             if (resetButton != null) resetButton.onClick.AddListener(AskReset);
@@ -42,7 +52,8 @@ namespace DungeonKnight
             SetStatus("");
             Refresh();
             panel.SetActive(true);
-            Select(screenShakeButton);
+            if (musicSlider != null) Select(musicSlider);
+            else Select(screenShakeButton);
         }
 
         public void Close()
@@ -53,8 +64,35 @@ namespace DungeonKnight
                 return;
             }
             if (panel == null || !panel.activeSelf) return;
+            CommitVolume();
             panel.SetActive(false);
             Closed?.Invoke();
+        }
+
+        void OnDisable() => CommitVolume();
+
+        void OnMusicChanged(float value)
+        {
+            SaveManager.SetMusicVolume(value, false);
+            volumeDirty = true;
+            RefreshVolumeLabels();
+        }
+
+        void OnSfxChanged(float value)
+        {
+            SaveManager.SetSfxVolume(value, false);
+            volumeDirty = true;
+            RefreshVolumeLabels();
+            if (Time.unscaledTime < nextPreview) return;
+            nextPreview = Time.unscaledTime + sfxPreviewInterval;
+            GameAudio.Play(SoundId.CoinPickup);
+        }
+
+        void CommitVolume()
+        {
+            if (!volumeDirty) return;
+            volumeDirty = false;
+            SaveManager.Save();
         }
 
         void ToggleScreenShake()
@@ -93,8 +131,18 @@ namespace DungeonKnight
         void Refresh()
         {
             GameSettings settings = SaveManager.Settings;
+            if (musicSlider != null) musicSlider.SetValueWithoutNotify(settings.musicVolume);
+            if (sfxSlider != null) sfxSlider.SetValueWithoutNotify(settings.sfxVolume);
+            RefreshVolumeLabels();
             if (screenShakeLabel != null) screenShakeLabel.text = $"SCREEN SHAKE: {(settings.screenShake ? "ON" : "OFF")}";
             if (autoAimLabel != null) autoAimLabel.text = $"AUTO AIM: {(settings.autoAim ? "ON" : "OFF")}";
+        }
+
+        void RefreshVolumeLabels()
+        {
+            GameSettings settings = SaveManager.Settings;
+            if (musicLabel != null) musicLabel.text = $"{Mathf.RoundToInt(settings.musicVolume * 100f)}%";
+            if (sfxLabel != null) sfxLabel.text = $"{Mathf.RoundToInt(settings.sfxVolume * 100f)}%";
         }
 
         void SetStatus(string message)
@@ -102,9 +150,9 @@ namespace DungeonKnight
             if (statusText != null) statusText.text = message;
         }
 
-        static void Select(Button button)
+        static void Select(Selectable selectable)
         {
-            if (button != null && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(button.gameObject);
+            if (selectable != null && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(selectable.gameObject);
         }
     }
 }

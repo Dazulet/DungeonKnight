@@ -167,7 +167,11 @@ namespace DungeonKnight
             if (previous == ShooterState.Aim)
             {
                 ClearBodyTint();
-                if (next != ShooterState.Recover) telegraph.Hide();
+                if (next != ShooterState.Recover)
+                {
+                    telegraph.Hide();
+                    StopWarningSound();
+                }
             }
             if (next == ShooterState.Engage && (previous == ShooterState.Watch || previous == ShooterState.Search)) IconAlert();
             if (next == ShooterState.Search) IconSuspicious(float.PositiveInfinity);
@@ -225,12 +229,14 @@ namespace DungeonKnight
             aimDirection = toTarget.sqrMagnitude > 0.0001f ? toTarget.normalized : motor.Facing;
             motor.Face(aimDirection);
             telegraph.ShowLine(Muzzle, aimDirection, ShotLength(aimDirection));
+            PlayWarningSound(SoundId.ShooterAim);
         }
 
         void Fire()
         {
             nextShotTime = Time.time + stats.shotCooldown;
             telegraph.Flash();
+            PlayAttackSound(SoundId.ShooterFire, Muzzle);
             EnemyBolt bolt = Instantiate(boltPrefab, Muzzle, Quaternion.identity);
             bolt.Launch(aimDirection, stats.projectileSpeed, stats.attackDamage, stats.projectileRange);
         }

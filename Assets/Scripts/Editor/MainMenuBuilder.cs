@@ -112,14 +112,16 @@ namespace DungeonKnight.EditorTools
 
         static SettingsPanel BuildSettings(Transform canvas)
         {
-            RectTransform panel = Overlay(canvas, "Settings Overlay", new Vector2(1000f, 820f), "SETTINGS", out GameObject overlay);
-            var wide = new Vector2(760f, 120f);
-            Button shake = UiFactory.Button(panel, "Screen Shake Button", "SCREEN SHAKE: ON", UiFactory.Center, new Vector2(0f, 170f), wide, 52);
-            Button aim = UiFactory.Button(panel, "Auto Aim Button", "AUTO AIM: ON", UiFactory.Center, new Vector2(0f, 30f), wide, 52);
-            Button reset = UiFactory.Button(panel, "Reset Progress Button", "RESET PROGRESS", UiFactory.Center, new Vector2(0f, -110f), wide, 52);
-            Text status = UiFactory.Text(panel, "Status", "", 40, UiFactory.Center, new Vector2(0f, -215f), new Vector2(900f, 60f),
+            RectTransform panel = Overlay(canvas, "Settings Overlay", new Vector2(1000f, 1020f), "SETTINGS", out GameObject overlay);
+            var wide = new Vector2(760f, 112f);
+            Slider music = VolumeSlider(panel, "Music Volume", "MUSIC", 290f, out Text musicValue);
+            Slider sfx = VolumeSlider(panel, "SFX Volume", "SFX", 180f, out Text sfxValue);
+            Button shake = UiFactory.Button(panel, "Screen Shake Button", "SCREEN SHAKE: ON", UiFactory.Center, new Vector2(0f, 55f), wide, 52);
+            Button aim = UiFactory.Button(panel, "Auto Aim Button", "AUTO AIM: ON", UiFactory.Center, new Vector2(0f, -70f), wide, 52);
+            Button reset = UiFactory.Button(panel, "Reset Progress Button", "RESET PROGRESS", UiFactory.Center, new Vector2(0f, -195f), wide, 52);
+            Text status = UiFactory.Text(panel, "Status", "", 40, UiFactory.Center, new Vector2(0f, -287f), new Vector2(900f, 50f),
                 color: UiFactory.Gold);
-            Button back = UiFactory.Button(panel, "Back Button", "BACK", UiFactory.Center, new Vector2(0f, -320f), PanelButtonSize);
+            Button back = UiFactory.Button(panel, "Back Button", "BACK", UiFactory.Center, new Vector2(0f, -385f), PanelButtonSize);
 
             RectTransform confirm = Overlay(overlay.transform, "Reset Confirm", new Vector2(960f, 600f), "RESET PROGRESS?", out GameObject confirmOverlay);
             Text body = UiFactory.Text(confirm, "Message", "ALL LEVELS AND BEST SCORES\nWILL BE DELETED.\nSETTINGS ARE KEPT.", 40,
@@ -132,6 +134,10 @@ namespace DungeonKnight.EditorTools
 
             var settings = overlay.AddComponent<SettingsPanel>();
             BuilderUtil.Set(settings, "panel", overlay);
+            BuilderUtil.Set(settings, "musicSlider", music);
+            BuilderUtil.Set(settings, "musicLabel", musicValue);
+            BuilderUtil.Set(settings, "sfxSlider", sfx);
+            BuilderUtil.Set(settings, "sfxLabel", sfxValue);
             BuilderUtil.Set(settings, "screenShakeButton", shake);
             BuilderUtil.Set(settings, "screenShakeLabel", shake.transform.Find("Label").GetComponent<Text>());
             BuilderUtil.Set(settings, "autoAimButton", aim);
@@ -143,6 +149,53 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(settings, "confirmButton", yes);
             BuilderUtil.Set(settings, "cancelButton", no);
             return settings;
+        }
+
+        static Slider VolumeSlider(Transform parent, string name, string label, float y, out Text value)
+        {
+            RectTransform row = UiFactory.Rect(parent, name, UiFactory.Center, new Vector2(0f, y), new Vector2(760f, 96f));
+            UiFactory.Text(row, "Label", label, 48, UiFactory.Center, new Vector2(-280f, 3f), new Vector2(200f, 80f), TextAnchor.MiddleLeft);
+            value = UiFactory.Text(row, "Value", "80%", 46, UiFactory.Center, new Vector2(315f, 3f), new Vector2(130f, 80f),
+                TextAnchor.MiddleRight, UiFactory.Gold);
+
+            RectTransform root = UiFactory.Rect(row, "Slider", UiFactory.Center, new Vector2(40f, 0f), new Vector2(350f, 72f));
+            RectTransform track = UiFactory.Area(root, "Background", new Vector2(0f, 0.32f), new Vector2(1f, 0.68f));
+            Image trackImage = UiFactory.Image(track, null, new Color(0.13f, 0.09f, 0.13f, 1f), raycast: true);
+            var trackEdge = track.gameObject.AddComponent<Outline>();
+            trackEdge.effectColor = new Color(0.55f, 0.47f, 0.4f, 1f);
+            trackEdge.effectDistance = new Vector2(3f, -3f);
+
+            RectTransform fillArea = UiFactory.Area(root, "Fill Area", new Vector2(0f, 0.32f), new Vector2(1f, 0.68f));
+            RectTransform fill = UiFactory.Stretch(fillArea, "Fill");
+            UiFactory.Image(fill, null, UiFactory.Gold);
+
+            RectTransform handleArea = UiFactory.Stretch(root, "Handle Slide Area");
+            handleArea.offsetMin = new Vector2(32f, 0f);
+            handleArea.offsetMax = new Vector2(-32f, 0f);
+            RectTransform handle = UiFactory.Rect(handleArea, "Handle", UiFactory.Center, Vector2.zero, new Vector2(64f, 0f));
+            handle.anchorMin = new Vector2(0f, 0f);
+            handle.anchorMax = new Vector2(0f, 1f);
+            handle.sizeDelta = new Vector2(64f, 0f);
+            Image handleImage = UiFactory.Image(handle, BuilderUtil.Sprite("UI/ui_button"), raycast: true);
+
+            var slider = root.gameObject.AddComponent<Slider>();
+            slider.fillRect = fill;
+            slider.handleRect = handle;
+            slider.targetGraphic = handleImage;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.wholeNumbers = false;
+            slider.value = GameSettings.DefaultMusicVolume;
+            ColorBlock colors = slider.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1f, 0.95f, 0.82f);
+            colors.selectedColor = new Color(1f, 0.9f, 0.6f);
+            colors.pressedColor = new Color(0.72f, 0.66f, 0.62f);
+            colors.fadeDuration = 0.06f;
+            slider.colors = colors;
+            trackImage.raycastTarget = true;
+            return slider;
         }
 
         static Vector2 BgPoint(float x, float yFromTop) => new Vector2(x / BgWidth, 1f - yFromTop / BgHeight);

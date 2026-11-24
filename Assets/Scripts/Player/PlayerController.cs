@@ -12,9 +12,11 @@ namespace DungeonKnight
         [SerializeField] SpriteFlipbook animator;
         [SerializeField] Sprite[] idleFrames;
         [SerializeField] Sprite[] walkFrames;
+        [SerializeField, Min(0.05f)] float stepInterval = 0.3f;
 
         Rigidbody2D rb;
         Vector2 velocity;
+        float stepTimer;
 
         public Vector2 Facing { get; private set; } = Vector2.right;
 
@@ -40,6 +42,21 @@ namespace DungeonKnight
             }
             bool walking = move.sqrMagnitude > 0.01f;
             animator.Play(walking ? walkFrames : idleFrames, walking ? 10f : 3f);
+            UpdateSteps(walking);
+        }
+
+        void UpdateSteps(bool walking)
+        {
+            if (!walking)
+            {
+                stepTimer = 0f;
+                return;
+            }
+            if (Time.deltaTime <= 0f) return;
+            stepTimer -= Time.deltaTime;
+            if (stepTimer > 0f) return;
+            stepTimer = stepInterval;
+            GameAudio.Play(SoundId.Footstep);
         }
 
         void FixedUpdate()

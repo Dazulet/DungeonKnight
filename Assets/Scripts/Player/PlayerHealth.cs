@@ -39,6 +39,7 @@ namespace DungeonKnight
             invulnerableUntil = Time.time + (stats != null ? stats.invulnerableTime : 0f);
             if (hitFlash != null) hitFlash.Flash();
             HeartsChanged?.Invoke(Hearts, MaxHearts);
+            GameAudio.Play(SoundId.PlayerHurt);
             JuiceFx.Spawn(damageParticles, transform.position);
             HitStop.Trigger();
             Damaged?.Invoke();

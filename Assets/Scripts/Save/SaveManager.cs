@@ -25,6 +25,7 @@ namespace DungeonKnight
 
         public static GameSettings Settings => Data.settings;
         public static event Action SettingsChanged;
+        public static event Action VolumeChanged;
         public static SaveLoadResult LastLoadResult { get; private set; }
         public static bool RecoveredFromBadFile => LastLoadResult == SaveLoadResult.Empty || LastLoadResult == SaveLoadResult.Corrupted
             || LastLoadResult == SaveLoadResult.Incompatible || LastLoadResult == SaveLoadResult.Unreadable;
@@ -101,6 +102,20 @@ namespace DungeonKnight
         {
             Settings.showFps = show;
             SaveSettings();
+        }
+
+        public static void SetMusicVolume(float value, bool save)
+        {
+            Settings.musicVolume = Mathf.Clamp01(value);
+            if (save) Save();
+            VolumeChanged?.Invoke();
+        }
+
+        public static void SetSfxVolume(float value, bool save)
+        {
+            Settings.sfxVolume = Mathf.Clamp01(value);
+            if (save) Save();
+            VolumeChanged?.Invoke();
         }
 
         static void SaveSettings()

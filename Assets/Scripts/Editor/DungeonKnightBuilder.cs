@@ -21,6 +21,7 @@ namespace DungeonKnight.EditorTools
                 EditorUtility.DisplayProgressBar("Dungeon Knight", "Configuring project settings", 0.1f);
                 ProjectConfigurator.Configure();
                 AssetDatabase.Refresh();
+                AudioBuilder.Build();
 
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 

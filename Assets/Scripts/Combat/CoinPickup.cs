@@ -52,6 +52,7 @@ namespace DungeonKnight
             if (collected || other.gameObject.layer != GameLayers.Player) return;
             collected = true;
             if (score != null) score.AddCoin(data != null ? data.points : 0);
+            GameAudio.PlayAt(SoundId.CoinPickup, transform.position);
             if (collectEffect != null) Instantiate(collectEffect, transform.position, Quaternion.identity);
             JuiceFx.Spawn(collectParticles, transform.position);
             Destroy(gameObject);
