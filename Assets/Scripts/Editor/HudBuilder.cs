@@ -18,6 +18,8 @@ namespace DungeonKnight.EditorTools
         }
 
         static readonly Vector2 MenuButtonSize = new Vector2(560f, 140f);
+        static readonly Vector2 PauseButtonSize = new Vector2(560f, 120f);
+        static readonly Vector2 ToggleButtonSize = new Vector2(330f, 110f);
 
         public static Result Build(GameManager game, ScoreManager score, PlayerHealth player, LevelGoal goal = null)
         {
@@ -44,6 +46,11 @@ namespace DungeonKnight.EditorTools
             Text coinText = UiFactory.Text(scorePanel, "Coins", "x0", 50, left, new Vector2(344f, 0f),
                 new Vector2(110f, 80f), TextAnchor.MiddleLeft, UiFactory.Gold);
 
+            Text fpsText = UiFactory.Text(safe, "Fps Counter", "FPS --", 34, UiFactory.TopLeft, new Vector2(40f, -150f),
+                new Vector2(560f, 50f), TextAnchor.MiddleLeft, UiFactory.Gold);
+            var fps = fpsText.gameObject.AddComponent<FpsCounter>();
+            BuilderUtil.Set(fps, "label", fpsText);
+
             Button pauseButton = UiFactory.IconButton(safe, "Pause Button", BuilderUtil.Sprite("UI/pause_icon"),
                 UiFactory.TopRight, new Vector2(-40f, -40f), new Vector2(140f, 140f), new Vector2(64f, 64f));
 
@@ -68,7 +75,8 @@ namespace DungeonKnight.EditorTools
             var shoot = shootZone.gameObject.AddComponent<MobileShootButton>();
             BuilderUtil.Set(shoot, "visual", shootVisual);
 
-            GameObject pauseOverlay = BuildPauseOverlay(canvas.transform, out Button resume, out Button restart, out Button pauseMenu);
+            GameObject pauseOverlay = BuildPauseOverlay(canvas.transform, out Button resume, out Button restart, out Button pauseMenu,
+                out Button effects, out Button fpsToggle);
             GameObject gameOverOverlay = BuildGameOverOverlay(canvas.transform, out Text result, out Button retry, out Button gameOverMenu);
 
             Text goalText = null;
@@ -112,6 +120,10 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(pause, "resumeButton", resume);
             BuilderUtil.Set(pause, "restartButton", restart);
             BuilderUtil.Set(pause, "menuButton", pauseMenu);
+            BuilderUtil.Set(pause, "effectsButton", effects);
+            BuilderUtil.Set(pause, "effectsLabel", effects.GetComponentInChildren<Text>());
+            BuilderUtil.Set(pause, "fpsButton", fpsToggle);
+            BuilderUtil.Set(pause, "fpsLabel", fpsToggle.GetComponentInChildren<Text>());
             BuilderUtil.Set(pause, "gameplayControls", new[] { joystickZone.gameObject, shootZone.gameObject, pauseButton.gameObject });
 
             var gameOver = canvas.gameObject.AddComponent<GameOverPanel>();
@@ -126,23 +138,28 @@ namespace DungeonKnight.EditorTools
             return new Result(joystick, shoot);
         }
 
-        static RectTransform Overlay(Transform canvas, string name, Color dim, string title, Color titleColor)
+        static RectTransform Overlay(Transform canvas, string name, Color dim, string title, Color titleColor, float height = 760f)
         {
             RectTransform overlay = UiFactory.Stretch(canvas, name);
             UiFactory.Image(overlay, null, dim, raycast: true);
-            RectTransform panel = UiFactory.Rect(overlay, "Panel", UiFactory.Center, Vector2.zero, new Vector2(800f, 760f));
+            RectTransform panel = UiFactory.Rect(overlay, "Panel", UiFactory.Center, Vector2.zero, new Vector2(800f, height));
             UiFactory.Image(panel, BuilderUtil.Sprite("UI/ui_panel"));
-            UiFactory.Text(panel, "Title", title, 90, UiFactory.Center, new Vector2(0f, 270f), new Vector2(760f, 120f),
+            UiFactory.Text(panel, "Title", title, 90, UiFactory.Center, new Vector2(0f, height * 0.5f - 110f), new Vector2(760f, 120f),
                 color: titleColor, outline: 6f);
             return panel;
         }
 
-        static GameObject BuildPauseOverlay(Transform canvas, out Button resume, out Button restart, out Button menu)
+        static GameObject BuildPauseOverlay(Transform canvas, out Button resume, out Button restart, out Button menu,
+            out Button effects, out Button fps)
         {
-            RectTransform panel = Overlay(canvas, "Pause Overlay", new Color(0f, 0f, 0f, 0.7f), "PAUSED", UiFactory.Gold);
-            resume = UiFactory.Button(panel, "Resume Button", "RESUME", UiFactory.Center, new Vector2(0f, 90f), MenuButtonSize);
-            restart = UiFactory.Button(panel, "Restart Button", "RESTART", UiFactory.Center, new Vector2(0f, -80f), MenuButtonSize);
-            menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -250f), MenuButtonSize);
+            RectTransform panel = Overlay(canvas, "Pause Overlay", new Color(0f, 0f, 0f, 0.7f), "PAUSED", UiFactory.Gold, 840f);
+            resume = UiFactory.Button(panel, "Resume Button", "RESUME", UiFactory.Center, new Vector2(0f, 150f), PauseButtonSize);
+            restart = UiFactory.Button(panel, "Restart Button", "RESTART", UiFactory.Center, new Vector2(0f, 15f), PauseButtonSize);
+            menu = UiFactory.Button(panel, "Main Menu Button", "MAIN MENU", UiFactory.Center, new Vector2(0f, -120f), PauseButtonSize);
+            effects = UiFactory.Button(panel, "Effects Button", "EFFECTS: ON", UiFactory.Center, new Vector2(-175f, -268f),
+                ToggleButtonSize, 40);
+            fps = UiFactory.Button(panel, "Fps Button", "FPS: OFF", UiFactory.Center, new Vector2(175f, -268f),
+                ToggleButtonSize, 40);
             GameObject overlay = panel.parent.gameObject;
             overlay.SetActive(false);
             return overlay;

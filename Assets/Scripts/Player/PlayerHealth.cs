@@ -10,6 +10,7 @@ namespace DungeonKnight
         [SerializeField] SpriteRenderer body;
         [SerializeField] HitFlash hitFlash;
         [SerializeField] GameObject deathEffect;
+        [SerializeField] GameObject damageParticles;
 
         float invulnerableUntil;
 
@@ -38,6 +39,8 @@ namespace DungeonKnight
             invulnerableUntil = Time.time + (stats != null ? stats.invulnerableTime : 0f);
             if (hitFlash != null) hitFlash.Flash();
             HeartsChanged?.Invoke(Hearts, MaxHearts);
+            JuiceFx.Spawn(damageParticles, transform.position);
+            HitStop.Trigger();
             Damaged?.Invoke();
             if (Hearts == 0) Die();
             return true;

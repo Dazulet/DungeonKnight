@@ -7,7 +7,10 @@ namespace DungeonKnight
         [SerializeField] PlayerHealth player;
         [SerializeField, Min(0f)] float hitMagnitude = 0.15f;
         [SerializeField, Min(0f)] float deathMagnitude = 0.35f;
+        [SerializeField, Min(0f)] float impactMagnitude = 0.08f;
         [SerializeField, Min(0.01f)] float duration = 0.2f;
+
+        static CameraShake current;
 
         Vector3 basePosition;
         float timeLeft;
@@ -17,6 +20,7 @@ namespace DungeonKnight
 
         void OnEnable()
         {
+            current = this;
             if (!RefCheck.Valid(this, player, nameof(player))) return;
             player.Damaged += OnDamaged;
             player.Died += OnDied;
@@ -24,6 +28,7 @@ namespace DungeonKnight
 
         void OnDisable()
         {
+            if (current == this) current = null;
             if (player == null) return;
             player.Damaged -= OnDamaged;
             player.Died -= OnDied;
@@ -32,6 +37,11 @@ namespace DungeonKnight
         void OnDamaged() => Shake(hitMagnitude);
 
         void OnDied() => Shake(deathMagnitude);
+
+        public static void Impact()
+        {
+            if (current != null && JuiceFx.Enabled) current.Shake(current.impactMagnitude);
+        }
 
         public void Shake(float strength)
         {

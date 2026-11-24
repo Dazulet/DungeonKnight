@@ -8,19 +8,20 @@ namespace DungeonKnight.EditorTools
 
         public static void BuildAll()
         {
+            JuiceBuilder.Particles fx = JuiceBuilder.BuildParticles();
             GameObject hit = BuildEffect("HitEffect", BuilderUtil.Frames("Effects/hit", 3), 18f, Color.white, 1f);
             GameObject puff = BuildEffect("DeathPuff", BuilderUtil.Frames("Effects/puff", 4), 14f, Color.white, 1.2f);
             BuildEffect("SpawnMarker", BuilderUtil.Frames("Effects/puff", 4), 10f, new Color(1f, 0.45f, 0.55f, 0.9f), 1f);
             GameObject sparkle = BuildEffect("CoinSparkle", BuilderUtil.Frames("Effects/hit", 3), 20f, new Color(1f, 0.9f, 0.35f), 0.7f);
 
             BuildProjectile(hit);
-            GameObject coin = BuildCoin(sparkle);
+            GameObject coin = BuildCoin(sparkle, fx.CoinPickup);
             BuildEnemy("Slime", BuilderUtil.Frames("Enemies/slime", 2), 4f, BuilderUtil.Data<ChaserStats>("Enemies/SlimeStats"),
                 radius: 0.36f, bodyHeight: 0f, puff, coin);
             BuildEnemy("Bat", BuilderUtil.Frames("Enemies/bat", 2), 10f, BuilderUtil.Data<ChaserStats>("Enemies/BatStats"),
                 radius: 0.3f, bodyHeight: 0.3f, puff, coin);
             EnemyPrefabBuilder.BuildAll(puff, coin, hit);
-            BuildKnight(puff);
+            BuildKnight(puff, fx.PlayerDamage);
         }
 
         static GameObject BuildEffect(string name, Sprite[] frames, float fps, Color tint, float scale)
@@ -72,7 +73,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.SavePrefab(go, "Projectile");
         }
 
-        static GameObject BuildCoin(GameObject sparkle)
+        static GameObject BuildCoin(GameObject sparkle, GameObject particles)
         {
             var go = new GameObject("Coin") { layer = GameLayers.Pickup };
             Shadow(go, -0.32f, 0.5f);
@@ -91,6 +92,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(coin, "data", BuilderUtil.Data<CoinData>("Items/CoinData"));
             BuilderUtil.Set(coin, "body", sr);
             BuilderUtil.Set(coin, "collectEffect", sparkle);
+            BuilderUtil.Set(coin, "collectParticles", particles);
             return BuilderUtil.SavePrefab(go, "Coin");
         }
 
@@ -101,6 +103,7 @@ namespace DungeonKnight.EditorTools
             Shadow(go, -0.45f, bodyHeight > 0f ? 0.7f : 0.9f);
             GameObject body = BuilderUtil.Child(go, "Body", new Vector3(0f, bodyHeight, 0f));
             SpriteRenderer sr = BuilderUtil.AddSprite(body, frames[0], 0);
+            sr.sharedMaterial = JuiceBuilder.FlashMaterial();
             BuilderUtil.AddFlipbook(body, frames, fps, randomizeStart: true);
             BuilderUtil.Set(body.AddComponent<YSorter>(), "feetOffset", -0.45f - bodyHeight);
 
@@ -117,6 +120,8 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(hp, "stats", stats);
             BuilderUtil.Set(hp, "hitFlash", flash);
             BuilderUtil.Set(hp, "deathEffect", deathEffect);
+            BuilderUtil.Set(hp, "hitParticles", BuilderUtil.LoadPrefab("FxEnemyHit"));
+            BuilderUtil.Set(hp, "deathParticles", BuilderUtil.LoadPrefab("FxEnemyDeath"));
             BuilderUtil.Set(hp, "coinPrefab", coin.GetComponent<CoinPickup>());
 
             var ai = go.AddComponent<EnemyController>();
@@ -126,7 +131,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.SavePrefab(go, name);
         }
 
-        static void BuildKnight(GameObject deathEffect)
+        static void BuildKnight(GameObject deathEffect, GameObject damageParticles)
         {
             var go = new GameObject("Knight") { layer = GameLayers.Player };
             Shadow(go, -0.45f, 0.9f);
@@ -154,6 +159,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(health, "body", sr);
             BuilderUtil.Set(health, "hitFlash", flash);
             BuilderUtil.Set(health, "deathEffect", deathEffect);
+            BuilderUtil.Set(health, "damageParticles", damageParticles);
 
             var controller = go.AddComponent<PlayerController>();
             BuilderUtil.Set(controller, "stats", stats);

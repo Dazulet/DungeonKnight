@@ -7,6 +7,7 @@ namespace DungeonKnight
         [SerializeField] CoinData data;
         [SerializeField] SpriteRenderer body;
         [SerializeField] GameObject collectEffect;
+        [SerializeField] GameObject collectParticles;
 
         ScoreManager score;
         Transform player;
@@ -52,6 +53,7 @@ namespace DungeonKnight
             collected = true;
             if (score != null) score.AddCoin(data != null ? data.points : 0);
             if (collectEffect != null) Instantiate(collectEffect, transform.position, Quaternion.identity);
+            JuiceFx.Spawn(collectParticles, transform.position);
             Destroy(gameObject);
         }
     }

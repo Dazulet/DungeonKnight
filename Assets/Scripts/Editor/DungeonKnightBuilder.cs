@@ -9,6 +9,7 @@ namespace DungeonKnight.EditorTools
     public static class DungeonKnightBuilder
     {
         const string ApkPath = "Builds/DungeonKnight.apk";
+        const string DevelopmentApkPath = "Builds/DungeonKnight-development.apk";
 
         [MenuItem("Dungeon Knight/Build Project", priority = 0)]
         public static void BuildAll()
@@ -57,11 +58,17 @@ namespace DungeonKnight.EditorTools
         }
 
         [MenuItem("Dungeon Knight/Build Android APK", priority = 20)]
-        public static void BuildAndroid()
+        public static void BuildAndroid() => BuildAndroid(ApkPath, BuildOptions.None);
+
+        [MenuItem("Dungeon Knight/Build Android APK (Development + Profiler)", priority = 21)]
+        public static void BuildAndroidDevelopment() =>
+            BuildAndroid(DevelopmentApkPath, BuildOptions.Development | BuildOptions.ConnectWithProfiler);
+
+        static void BuildAndroid(string apkPath, BuildOptions buildOptions)
         {
             if (!File.Exists($"{BuilderUtil.SceneRoot}/{SceneNames.Dungeon}.unity")) BuildAll();
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ApkPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(apkPath));
             var options = new BuildPlayerOptions
             {
                 scenes = new[]
@@ -70,14 +77,14 @@ namespace DungeonKnight.EditorTools
                     $"{BuilderUtil.SceneRoot}/{SceneNames.Dungeon}.unity",
                     $"{BuilderUtil.SceneRoot}/{SceneNames.Endless}.unity",
                 },
-                locationPathName = ApkPath,
+                locationPathName = apkPath,
                 target = BuildTarget.Android,
-                options = BuildOptions.None,
+                options = buildOptions,
             };
             EditorUserBuildSettings.buildAppBundle = false;
             BuildReport report = BuildPipeline.BuildPlayer(options);
             if (report.summary.result == BuildResult.Succeeded)
-                Debug.Log($"Dungeon Knight: APK written to {ApkPath} ({report.summary.totalSize / (1024 * 1024)} MB).");
+                Debug.Log($"Dungeon Knight: APK written to {apkPath} ({report.summary.totalSize / (1024 * 1024)} MB).");
             else
                 Debug.LogError($"Dungeon Knight: Android build {report.summary.result}. Check that the Android Build Support module is installed.");
         }

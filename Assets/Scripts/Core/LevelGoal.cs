@@ -7,6 +7,8 @@ namespace DungeonKnight
     {
         [SerializeField] GameManager game;
         [SerializeField] ScoreManager score;
+        [SerializeField] GameObject victoryParticles;
+        [SerializeField] Transform victoryPoint;
 
         float finishTime = -1f;
         int defeated;
@@ -66,6 +68,7 @@ namespace DungeonKnight
             if (IsComplete || TimedOut || game == null || !game.CompleteLevel()) return;
             IsComplete = true;
             finishTime = Time.timeSinceLevelLoad;
+            JuiceFx.Spawn(victoryParticles, victoryPoint != null ? victoryPoint.position : transform.position);
             TryCounter.Reset();
             IsNewBest = SaveManager.CompleteLevel(Level.levelNumber, score != null ? score.Score : 0, finishTime);
         }

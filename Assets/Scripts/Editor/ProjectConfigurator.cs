@@ -19,6 +19,7 @@ namespace DungeonKnight.EditorTools
         {
             ConfigurePlayer();
             ConfigureEditor();
+            JuiceBuilder.ConfigureRendering();
             EnsureLayers();
             ReimportArt();
             ConfigureFont();

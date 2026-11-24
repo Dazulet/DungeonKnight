@@ -16,6 +16,8 @@ namespace DungeonKnight
     {
         public bool screenShake = true;
         public bool autoAim = true;
+        public bool effectsOff;
+        public bool showFps;
     }
 
     [Serializable]

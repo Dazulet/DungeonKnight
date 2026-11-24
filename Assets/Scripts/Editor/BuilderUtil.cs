@@ -117,6 +117,7 @@ namespace DungeonKnight.EditorTools
         public static SpriteRenderer AddSprite(GameObject go, Sprite sprite, int order, Color? color = null)
         {
             var sr = go.AddComponent<SpriteRenderer>();
+            sr.sharedMaterial = JuiceBuilder.SpriteMaterial();
             sr.sprite = sprite;
             sr.sortingOrder = order;
             if (color.HasValue) sr.color = color.Value;

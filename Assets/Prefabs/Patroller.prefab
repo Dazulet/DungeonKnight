@@ -58,7 +58,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -229,6 +229,8 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 6143ae0b5bf589047ae0c4c54ab6de54, type: 2}
   hitFlash: {fileID: 7029290413367399502}
   deathEffect: {fileID: 2812100078477985753, guid: 076f047b08dca37419fe46ef46d33ffe, type: 3}
+  hitParticles: {fileID: 1398565408163929850, guid: 7b2f515fa758ae548bf5f8a200ffd027, type: 3}
+  deathParticles: {fileID: 4552241945180259566, guid: 216acbc3da371924dac059222e9afb20, type: 3}
   coinPrefab: {fileID: 6370443523478918334, guid: 4b09c72778f212d4f900cb846a35aae1, type: 3}
   score: {fileID: 0}
   player: {fileID: 0}
@@ -299,7 +301,7 @@ MonoBehaviour:
   telegraph: {fileID: 7413424936382643024}
   stats: {fileID: 11400000, guid: 6143ae0b5bf589047ae0c4c54ab6de54, type: 2}
   strikeEffect: {fileID: 6460539499944519896, guid: 5c1cf8b2bc8a64a40a0f41cf42e4ce45, type: 3}
-  waypoints: []
+  route: []
   stuckCheckInterval: 2.5
   stuckDistance: 0.3
   obstacleMask:
@@ -363,7 +365,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -516,7 +518,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -610,7 +612,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2ade1c84eb447694093dabe3d300a83d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -737,7 +739,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -60,7 +60,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -188,7 +188,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -336,3 +336,4 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 86759a133de905a43bd72558cf326fe2, type: 2}
   body: {fileID: 3011683043288332152}
   collectEffect: {fileID: 959308726658945867, guid: a6faf7994da17ee458972b8ecfac1139, type: 3}
+  collectParticles: {fileID: 915224356479494107, guid: 0a0fdc54890110d4ca4e605d75d184e4, type: 3}

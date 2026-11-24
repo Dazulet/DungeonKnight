@@ -24,6 +24,7 @@ namespace DungeonKnight
         }
 
         public static GameSettings Settings => Data.settings;
+        public static event Action SettingsChanged;
         public static SaveLoadResult LastLoadResult { get; private set; }
         public static bool RecoveredFromBadFile => LastLoadResult == SaveLoadResult.Empty || LastLoadResult == SaveLoadResult.Corrupted
             || LastLoadResult == SaveLoadResult.Incompatible || LastLoadResult == SaveLoadResult.Unreadable;
@@ -81,13 +82,31 @@ namespace DungeonKnight
         public static void SetScreenShake(bool enabled)
         {
             Settings.screenShake = enabled;
-            Save();
+            SaveSettings();
         }
 
         public static void SetAutoAim(bool enabled)
         {
             Settings.autoAim = enabled;
+            SaveSettings();
+        }
+
+        public static void SetEffects(bool enabled)
+        {
+            Settings.effectsOff = !enabled;
+            SaveSettings();
+        }
+
+        public static void SetShowFps(bool show)
+        {
+            Settings.showFps = show;
+            SaveSettings();
+        }
+
+        static void SaveSettings()
+        {
             Save();
+            SettingsChanged?.Invoke();
         }
 
         public static void ResetProgress()

@@ -10,6 +10,8 @@ namespace DungeonKnight
         [SerializeField] EnemyStats stats;
         [SerializeField] HitFlash hitFlash;
         [SerializeField] GameObject deathEffect;
+        [SerializeField] GameObject hitParticles;
+        [SerializeField] GameObject deathParticles;
         [SerializeField] CoinPickup coinPrefab;
         [SerializeField] ScoreManager score;
         [SerializeField] Transform player;
@@ -45,8 +47,13 @@ namespace DungeonKnight
             Health -= amount;
             if (hitFlash != null) hitFlash.Flash();
             if (rb != null) rb.AddForce(push, ForceMode2D.Impulse);
-            if (Health <= 0) Die();
-            else Damaged?.Invoke(push);
+            if (Health <= 0)
+            {
+                Die();
+                return;
+            }
+            JuiceFx.Spawn(hitParticles, transform.position);
+            Damaged?.Invoke(push);
         }
 
         void Die()
@@ -54,6 +61,9 @@ namespace DungeonKnight
             if (score != null && stats != null) score.AddScore(stats.scoreValue);
             Died?.Invoke(this);
             if (deathEffect != null) Instantiate(deathEffect, transform.position, Quaternion.identity);
+            JuiceFx.Spawn(deathParticles, transform.position);
+            CameraShake.Impact();
+            HitStop.Trigger();
             if (coinPrefab != null && stats != null && Random.value < stats.coinDropChance)
             {
                 CoinPickup coin = Instantiate(coinPrefab, transform.position, Quaternion.identity);

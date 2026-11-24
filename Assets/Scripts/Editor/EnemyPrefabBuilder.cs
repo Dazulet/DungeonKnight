@@ -109,6 +109,7 @@ namespace DungeonKnight.EditorTools
             PrefabBuilder.Shadow(go, -0.45f, 0.9f);
             GameObject body = BuilderUtil.Child(go, "Body");
             SpriteRenderer sr = BuilderUtil.AddSprite(body, frames[0], 0);
+            sr.sharedMaterial = JuiceBuilder.FlashMaterial();
             BuilderUtil.AddFlipbook(body, frames, fps, randomizeStart: true);
             BuilderUtil.Set(body.AddComponent<YSorter>(), "feetOffset", -0.45f);
 
@@ -125,6 +126,8 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(enemyHealth, "stats", stats);
             BuilderUtil.Set(enemyHealth, "hitFlash", flash);
             BuilderUtil.Set(enemyHealth, "deathEffect", deathEffect);
+            BuilderUtil.Set(enemyHealth, "hitParticles", BuilderUtil.LoadPrefab("FxEnemyHit"));
+            BuilderUtil.Set(enemyHealth, "deathParticles", BuilderUtil.LoadPrefab("FxEnemyDeath"));
             BuilderUtil.Set(enemyHealth, "coinPrefab", coin.GetComponent<CoinPickup>());
 
             motor = go.AddComponent<EnemyMotor>();

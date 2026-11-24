@@ -79,6 +79,7 @@ namespace DungeonKnight.EditorTools
             var gameManager = game.AddComponent<GameManager>();
             var score = game.AddComponent<ScoreManager>();
             BuilderUtil.Set(gameManager, "player", player);
+            BuilderUtil.Set(game.AddComponent<HitStop>(), "game", gameManager);
 
             LevelGoal goal = null;
             if (withEncounter)
@@ -86,6 +87,8 @@ namespace DungeonKnight.EditorTools
                 goal = game.AddComponent<LevelGoal>();
                 BuilderUtil.Set(goal, "game", gameManager);
                 BuilderUtil.Set(goal, "score", score);
+                BuilderUtil.Set(goal, "victoryParticles", BuilderUtil.LoadPrefab("FxVictory"));
+                BuilderUtil.Set(goal, "victoryPoint", knight.transform);
                 var loader = game.AddComponent<LevelLoader>();
                 BuilderUtil.Set(loader, "goal", goal);
                 BuilderUtil.Set(loader, "player", player);
@@ -123,6 +126,7 @@ namespace DungeonKnight.EditorTools
             BuilderUtil.Set(framer, "minHalfHeight", 6.9f);
             BuilderUtil.Set(framer, "minHalfWidth", 10.8f);
             BuilderUtil.Set(framer, "screenOverlay", overlay);
+            JuiceBuilder.AddPostProcessing(cam, overlay);
             return cam;
         }
 
